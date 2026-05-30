@@ -47,3 +47,10 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+.Rproj.user
+
+# MacOS files
+.DS_store
+
+# RStudio Preview Files
+README.html
