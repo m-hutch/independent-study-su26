@@ -106,7 +106,7 @@ summary(mod.H1)
 
 ## Use estimated weights as input for weighted lm-model.
 ## This also to perform further model diagnostics.
-mod.wlm <- lm(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE, weights=mod.lmH1$weights,
+mod.wlm <- lm(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE, weights=mod.H1$weights,
               data=validTractShp)
 summary(mod.wlm)
 hist(weighted.residuals(mod.wlm))

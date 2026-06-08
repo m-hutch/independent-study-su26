@@ -9,6 +9,7 @@ One polygon in the longitude and latitude format (see
   \code{proj4string=CRS("+proj=longlat +ellps=WGS84")}).
 }
 \examples{
+library(sp)
 validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]  # Remove 2 tracts with NA's
 plot(tractShp, col="white", border="white", axes=TRUE,
      main="Dallas Census Tracts with Food Deserts")

@@ -4,6 +4,7 @@
 #' @docType data
 #' @name bndShp
 #' @examples
+#' library(sp)
 #' validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]  # Remove 2 tracts with NA's
 #' plot(tractShp, col="white", border="white", axes=TRUE,
 #'      main="Dallas Census Tracts with Food Deserts")

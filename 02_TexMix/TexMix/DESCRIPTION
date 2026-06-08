@@ -3,7 +3,8 @@ Type: Package
 Title: Supporting Functions and Data for Geo-Spatial Analytics Courses at UTDallas, Texas
 Version: 0.5.4
 Authors@R: c(person("Michael", "Tiefelsdorf", email="tiefelsdorf@utdallas.edu", role=c("aut","cre")),
-             person("Yongwan", "Chun", role=c("ctb")))
+             person("Yongwan", "Chun", role=c("ctb")),
+             person("Megan", "Hutchison", role=c("ctb")))
 Maintainer: Michael Tiefelsdorf <tiefelsdorf@utdallas.edu>
 Description: A collection of functions and data - mostly from Texas - is provided. 
   These are used as teaching tools for geo-spatial data analytics courses in the 
@@ -21,5 +22,5 @@ Suggests: spatstat, smacpod, colorspace, car, effects, spdep, VIM,
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

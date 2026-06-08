@@ -24,18 +24,18 @@ Location of food stores in Dallas County, TX, in the longitude and
 }
 \examples{
 library(spatstat)
-library(rgdal)
 library(sp)
 proj4string(bndShp)                                     # Current system
 projUTM <- CRS("+proj=utm +zone=14  +units=m")          # isotropic coordinate sytem
 bndUTM <- spTransform(bndShp, projUTM)                  # Re-project boundary
 storesUTM <- spTransform(foodStoresShp, projUTM)        # Re-project points
 storesDf <- as.data.frame(storesUTM)                    # Extract data-frame
-storesPts <- as.ppp(storesUTM)                          # Convert to .ppp
-storesPts$marks <- NULL                                 # Clear marks
-bndWin <- as.mask(as.owin(bndUTM), eps=200)             # pixel window with 200 m resolution
+bnd_coords <- bndUTM@polygons[[1]]@Polygons[[1]]@coords
+bnd_coords <- bnd_coords[nrow(bnd_coords):1, ]          # reverse for spatstat winding order
+bndWin <- as.mask(owin(poly=list(x=bnd_coords[,1], y=bnd_coords[,2])), eps=200)
 unitname(bndWin) <- list("meter","meters")              # set units
-storesPts <- storesPts[bndWin]                          # assign window to pts
+storeCoords <- coordinates(storesUTM)
+storesPts <- ppp(x=storeCoords[,1], y=storeCoords[,2], window=bndWin)
 summary(storesPts)
 
 ## Evaluate weighted kernel density with bw=3000
