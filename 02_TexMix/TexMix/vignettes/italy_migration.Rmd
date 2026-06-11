@@ -1,0 +1,394 @@
+---
+title: "Spatial Interaction Models of Italian Provincial Migration"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Italy migration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r settings, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 6,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+This vignette demonstrates spatial interaction (gravity) modelling using internal
+migration flows among the 95 provinces of Italy (1994). Three datasets from the
+`TexMix` package are used:
+
+- `ItalyShp`: spatial polygons and socioeconomic attributes for Italian provinces
+- `Italy_neighborsShp`: background polygons for neighboring countries and territories
+- `Italy_migration`: a 95 × 95 origin-destination matrix of inter-provincial
+  migrant counts
+
+The analysis proceeds in four stages:
+
+1. **Exploratory mapping** of socioeconomic and migration patterns
+2. **Flow mapping** of the dominant migration corridors
+3. **Gravity models**: classical, over-dispersed, and doubly-constrained
+4. **Augmented models** that add socioeconomic push-pull variables
+
+```{r setup, message = FALSE, warning = FALSE}
+library(TexMix)
+library(sp)
+library(spdep)
+```
+
+---
+
+## Data
+
+We load the three datasets and compute two spatial summaries used throughout:
+the bounding box of Italy (for consistent map extents) and the matrix of
+great-circle distances between provincial centroids.
+
+```{r data}
+data(ItalyShp)
+data(Italy_neighborsShp)
+data(Italy_migration)
+
+bBox     <- sp::bbox(ItalyShp)
+centroid <- sp::coordinates(ItalyShp)
+dij      <- sp::spDists(centroid, longlat = TRUE)
+diag(dij) <- NA   # self-distances are undefined
+```
+
+---
+
+## Exploratory Mapping
+
+### Regional structure
+
+Italy's 95 provinces are grouped into three macro-regions (North, Central, and
+South) which serve as fixed effects in the doubly-constrained model below.
+
+```{r map-regions}
+sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+         xlim = bBox[1, ], ylim = bBox[2, ])
+mapColorQual(as.factor(ItalyShp$REGION), ItalyShp,
+             map.title    = "Regions of Italy",
+             legend.title = "Region",
+             add.to.map   = TRUE)
+```
+
+### Fertility rate
+
+Total fertility rate varies substantially across the peninsula, with notably
+lower rates in the North and Central regions.
+
+```{r map-fertility}
+sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+         xlim = bBox[1, ], ylim = bBox[2, ])
+mapColorRamp(ItalyShp$TOTFERTRAT, ItalyShp, breaks = 7,
+             map.title    = "Italy Fertility Rate",
+             legend.title = "Fertility Rate",
+             add.to.map   = TRUE, legend.cex = 0.7)
+```
+
+### Net migration ratio
+
+The log of the inflow-to-outflow ratio identifies provinces as net migration
+destinations (positive values) or net sources (negative values).
+
+```{r map-migration-ratio}
+ItalyShp$logMigRatio <- log(ItalyShp$INFLOW / ItalyShp$OUTFLOW)
+
+hist(ItalyShp$logMigRatio,
+     main = "Log Migration Ratio",
+     xlab = "log(Inflow / Outflow)")
+
+cat("Net losers (ratio < 0):", sum(ItalyShp$logMigRatio <  0), "\n")
+cat("Net gainers (ratio > 0):", sum(ItalyShp$logMigRatio >  0), "\n")
+```
+
+```{r map-bipolar}
+sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+         xlim = bBox[1, ], ylim = bBox[2, ])
+mapBiPolar(ItalyShp$logMigRatio, ItalyShp,
+           neg.breaks   = 3, pos.breaks = 5, break.value = 0,
+           map.title    = "Italy Migration Ratio",
+           legend.title = "Loss vs. Gain",
+           add.to.map   = TRUE, legend.cex = 0.9)
+```
+
+---
+
+## Migration Flow Matrix
+
+### Flow matrix setup
+
+We extract the 95 × 95 origin-destination matrix from `Italy_migration` and
+set the diagonal to `NA` (a province does not migrate to itself).
+
+```{r flow-matrix}
+mij       <- as.matrix(Italy_migration[, 2:96])
+diag(mij) <- NA
+```
+
+### Mapping dominant flows
+
+The top 1% of flows reveal the dominant migration corridors between provinces.
+
+```{r map-flows}
+bigmig        <- mij > quantile(as.vector(mij), prob = 0.99, na.rm = TRUE)
+diag(bigmig)  <- FALSE
+prov.link     <- spdep::mat2listw(bigmig, style = "B", zero.policy = TRUE)$neighbours
+
+sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+         xlim = bBox[1, ], ylim = bBox[2, ])
+sp::plot(ItalyShp, col = "palegreen3", border = grey(0.9), add = TRUE)
+plot(prov.link, coords = centroid, pch = 19, cex = 0.1,
+     arrows = TRUE, length = 0.05, col = "blue", add = TRUE)
+title("Top 1% of Migration Flows")
+box()
+```
+
+---
+
+## Building the Origin-Destination Data Frame
+
+`prepIJDf()` reshapes province-level attributes into a long-format OD data
+frame with one row per origin-destination pair (95² = 9,025 rows). With
+`logTrans = TRUE` and `zTrans = TRUE`, each positive numeric variable is
+expanded into log-standardized origin (`.iLZ`), destination (`.jLZ`), and
+log-ratio (`.ijLZ`) columns.
+
+```{r prep-df}
+dfShort <- ItalyShp@data[, c("PROVNAME", "REGION", "TOTPOP94", "TOTFERTRAT",
+                              "FEMMARAGE9", "DIVORCERAT", "ILLITERRAT", "TELEPERFAM")]
+dfShort$PROVNAME <- as.factor(dfShort$PROVNAME)
+df <- prepIJDf(dfShort, mij = mij, dij = dij, logTrans = TRUE, zTrans = TRUE)
+dim(df)
+```
+
+---
+
+## Gravity Models
+
+All models use a Poisson family and exclude self-pairs with
+`subset = (ID.i != ID.j)`.
+
+### Model 1: Classical gravity model
+
+The baseline gravity model regresses flow counts on log-distance and the
+log-standardized populations of the origin and destination provinces.
+
+```{r mig1}
+mig1.glm <- glm(mij ~ log(dij) + TOTPOP94.iLZ + TOTPOP94.jLZ,
+                data   = df,
+                family = poisson,
+                subset = (ID.i != ID.j))
+summary(mig1.glm)
+```
+
+**Over-dispersion check:** a Pearson dispersion ratio well above 1 indicates
+that the Poisson variance assumption is too restrictive.
+
+```{r mig1-dispersion}
+sum(residuals(mig1.glm, type = "pearson")^2) / mig1.glm$df.residual
+```
+
+### Model 2: Quasi-Poisson
+
+Quasi-Poisson keeps the same mean function but estimates a free dispersion
+parameter rather than fixing variance equal to the mean. An important property
+of Poisson-family models is that total predicted flow equals total observed flow.
+
+```{r mig2}
+mig2.glm <- glm(mij ~ log(dij) + TOTPOP94.iLZ + TOTPOP94.jLZ,
+                data   = df,
+                family = quasipoisson,
+                subset = (ID.i != ID.j))
+summary(mig2.glm)
+
+cat("Observed total flow: ", sum(df$mij[df$ID.i != df$ID.j], na.rm = TRUE), "\n")
+cat("Predicted total flow:", round(sum(predict(mig2.glm, type = "response"))),  "\n")
+```
+
+```{r mig2-fitplot}
+plot(df$mij[df$ID.i != df$ID.j],
+     predict(mig2.glm, type = "response"),
+     log  = "xy",
+     xlab = "Observed Migration Flows",
+     ylab = "Predicted Migration Flows",
+     main = "Quasi-Poisson: Observed vs. Predicted")
+abline(a = 0, b = 1, col = "red")
+```
+
+### Model 3: Negative binomial
+
+Negative binomial explicitly models the extra variance with a free parameter θ.
+Unlike Poisson-family models, it does not guarantee that total predicted and
+observed flows match.
+
+```{r mig3}
+mig3.glm <- MASS::glm.nb(mij ~ log(dij) + TOTPOP94.iLZ + TOTPOP94.jLZ,
+                          data    = df,
+                          subset  = (ID.i != ID.j),
+                          control = glm.control(epsilon = 1e-8, maxit = 100))
+summary(mig3.glm)
+
+cat("Observed total flow: ", sum(df$mij[df$ID.i != df$ID.j], na.rm = TRUE), "\n")
+cat("Predicted total flow:", round(sum(predict(mig3.glm, type = "response"))),  "\n")
+```
+
+### Model 4: Doubly-constrained model
+
+A doubly-constrained model adds province-level fixed effects for both origins
+and destinations, ensuring that predicted inflows and outflows match the
+observed values at every province. Sum (deviation) contrasts center these
+effects so that coefficients remain interpretable.
+
+```{r mig4}
+mig4.glm <- glm(mij ~ log(dij) + PROVNAME.iF + PROVNAME.jF,
+                data      = df,
+                family    = poisson,
+                subset    = (ID.i != ID.j),
+                contrasts = list(PROVNAME.iF = "contr.sum",
+                                 PROVNAME.jF = "contr.sum"))
+```
+
+We verify the constraint: observed and predicted inflows should be identical at
+every province.
+
+```{r mig4-balance}
+ObsInflow  <- tapply(df$mij,
+                     df$PROVNAME.iF,
+                     sum)
+PredInflow <- tapply(predict(mig4.glm, type = "response"),
+                     df$PROVNAME.iF[df$ID.i != df$ID.j],
+                     sum)
+head(cbind(Observed = ObsInflow, Predicted = round(PredInflow)), 10)
+```
+
+---
+
+## Optimizing the Distance Decay Function
+
+The log transformation of distance (λ = 0) may not be optimal. We profile the
+log-likelihood over a grid of Box–Cox power parameters (λ ∈ [−1.4, −0.4]) to
+find the best-fitting transformation.
+
+```{r lambda-search}
+# Replace NA self-distances with a small constant so power transforms are defined
+df$dij <- ifelse(is.na(df$dij), 0.1, df$dij)
+
+lambda <- seq(-1.4, -0.4, 0.01)
+LR     <- numeric(length(lambda))
+
+for (i in seq_along(lambda)) {
+  fit    <- glm(mij ~ car::bcPower(dij, lambda[i]) + TOTPOP94.iLZ + TOTPOP94.jLZ,
+                data = df, family = poisson, subset = (ID.i != ID.j))
+  LR[i] <- as.numeric(logLik(fit))
+}
+
+lambdaMax <- lambda[which.max(LR)]
+cat("Optimal lambda:", lambdaMax, "\n")
+```
+
+```{r lambda-plot}
+plot(lambda, LR, type = "l",
+     ylab = "Log-likelihood",
+     xlab = expression(lambda),
+     main = "Profile Log-Likelihood for Distance Transformation")
+abline(v = lambdaMax, col = "red", lwd = 2, lty = 2)
+text(lambdaMax + 0.02, min(LR) + diff(range(LR)) * 0.05,
+     bquote(hat(lambda) == .(lambdaMax)),
+     adj = 0, col = "red")
+```
+
+The optimal λ falls between −1 (inverse distance) and 0 (log distance),
+indicating that neither standard transformation provides the best fit.
+
+### Effect on distance distributions
+
+```{r dist-boxplot, fig.height = 6}
+iOrdProv <- reorder(df$PROVNAME.iF, df$dij, median)
+
+boxplot(dij ~ iOrdProv, data = df, subset = (ID.i != ID.j),
+        main     = "Inter-provincial Distances by Origin\n(before Box-Cox)",
+        xlab     = "Province",
+        ylab     = "Distance (km)",
+        las      = 2,
+        cex.axis = 0.45)
+
+boxplot(car::bcPower(dij, lambdaMax) ~ iOrdProv, data = df, subset = (ID.i != ID.j),
+        main     = "Inter-provincial Distances by Origin\n(after Box-Cox)",
+        xlab     = "Province",
+        ylab     = "Transformed Distance",
+        las      = 2,
+        cex.axis = 0.45)
+```
+
+---
+
+## Augmented Models
+
+We now add socioeconomic push-pull variables alongside the optimized distance
+term. Two parameterizations are compared.
+
+### Model 5: Separate origin and destination effects
+
+Each variable enters as independent origin (`.iLZ`) and destination (`.jLZ`)
+terms, allowing asymmetric push and pull effects.
+
+```{r mig5}
+mig5.glm <- glm(mij ~ car::bcPower(dij, lambdaMax) +
+                  TOTPOP94.iLZ   + TOTPOP94.jLZ   +
+                  TOTFERTRAT.iLZ + TOTFERTRAT.jLZ +
+                  FEMMARAGE9.iLZ + FEMMARAGE9.jLZ +
+                  DIVORCERAT.iLZ + DIVORCERAT.jLZ +
+                  ILLITERRAT.iLZ + ILLITERRAT.jLZ +
+                  TELEPERFAM.iLZ + TELEPERFAM.jLZ,
+                data   = df,
+                family = poisson,
+                subset = (ID.i != ID.j))
+summary(mig5.glm)
+car::vif(mig5.glm)
+```
+
+```{r mig5-fitplot}
+plot(df$mij[df$ID.i != df$ID.j],
+     predict(mig5.glm, type = "response"),
+     log  = "xy",
+     xlab = "Observed Migration Flows",
+     ylab = "Predicted Migration Flows",
+     main = "Model 5: Augmented (Separate Origin / Destination)")
+abline(a = 0, b = 1, col = "red")
+```
+
+### Model 6: Origin-to-destination ratio effects
+
+This model replaces the separate origin and destination terms with the
+log-ratio of origin to destination values (`.ijLZ`), which halves the number
+of socioeconomic parameters and tests whether the direction of the differential
+(rather than its absolute level) drives migration.
+
+```{r mig6}
+mig6.glm <- glm(mij ~ car::bcPower(dij, lambdaMax) +
+                  TOTPOP94.iLZ    + TOTPOP94.jLZ    +
+                  TOTFERTRAT.ijLZ + FEMMARAGE9.ijLZ +
+                  DIVORCERAT.ijLZ + ILLITERRAT.ijLZ +
+                  TELEPERFAM.ijLZ,
+                data   = df,
+                family = poisson,
+                subset = (ID.i != ID.j))
+summary(mig6.glm)
+car::vif(mig6.glm)
+```
+
+```{r mig6-fitplot}
+plot(df$mij[df$ID.i != df$ID.j],
+     predict(mig6.glm, type = "response"),
+     log  = "xy",
+     xlab = "Observed Migration Flows",
+     ylab = "Predicted Migration Flows",
+     main = "Model 6: Augmented (Origin/Destination Ratio)")
+abline(a = 0, b = 1, col = "red")
+```
