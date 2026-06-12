@@ -26,8 +26,6 @@ Spatial polygon data-frame with 95 provinces. The variables are as
 }
 }
 \source{
-Anselin, L. (1995). Local indicators of spatial association—LISA.
-  \emph{Geographical Analysis}, 27(2), 93–115.
 }
 \description{
 Boundaries and demographic/socioeconomic attributes for the 95
