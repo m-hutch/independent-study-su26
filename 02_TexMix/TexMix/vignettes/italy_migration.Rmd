@@ -1,5 +1,6 @@
 ---
 title: "Spatial Interaction Models of Italian Provincial Migration"
+author: "Michael Tiefelsdorf"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Italy migration}
