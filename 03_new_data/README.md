@@ -18,3 +18,6 @@ From Texas Water Development Board:
 
 From American Community Survey:
 - `ACS 2020-2024` directory
+
+# Exploratory Scripts
+`daypop.R` is an exploratory script comparing the Maptitude 18+ daytime population estimates to estimates from ACS and LEHD data
