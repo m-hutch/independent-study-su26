@@ -1,0 +1,364 @@
+--------------------------------------------------------------------------------
+Codebook for NHGIS data file 'nhgis0022_ds272_20245_tract'
+--------------------------------------------------------------------------------
+ 
+Contents
+    - Data Summary
+    - Data Dictionary
+    - Citation and Use
+ 
+Additional documentation on NHGIS data sources is available at: 
+    https://www.nhgis.org/documentation/tabular-data 
+ 
+--------------------------------------------------------------------------------
+Data Summary
+--------------------------------------------------------------------------------
+ 
+Year:             2020-2024
+Geographic level: Census Tract (by State--County)
+Extent:           Texas
+Dataset:          2024 American Community Survey: 5-Year Data [2020-2024, Block Groups & Larger Areas]
+   NHGIS code:    2020_2024_ACS5a
+   NHGIS ID:      ds272
+Breakdown(s):     Geographic Component:
+                     Total area (00)
+Data type(s):     (E) Estimates
+                  (M) Margins of error
+ 
+Tables:
+ 
+1. Total Population
+   Universe:    Total population
+   Source code: B01003
+   NHGIS code:  AUO6
+ 
+2. Race
+   Universe:    Total population
+   Source code: B02001
+   NHGIS code:  AUO7
+ 
+3. Hispanic or Latino Origin
+   Universe:    Total population
+   Source code: B03003
+   NHGIS code:  AUPG
+ 
+4. Travel Time to Work
+   Universe:    Workers 16 years and over who did not work from home
+   Source code: B08303
+   NHGIS code:  AUPY
+ 
+5. Educational Attainment for the Population 25 Years and Over
+   Universe:    Population 25 years and over
+   Source code: B15003
+   NHGIS code:  AUQ8
+ 
+6. Per Capita Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)
+   Universe:    Total population
+   Source code: B19301
+   NHGIS code:  AUSY
+ 
+7. Housing Units
+   Universe:    Housing units
+   Source code: B25001
+   NHGIS code:  AUUC
+ 
+8. Occupancy Status
+   Universe:    Housing units
+   Source code: B25002
+   NHGIS code:  AUUD
+ 
+--------------------------------------------------------------------------------
+Data Dictionary
+--------------------------------------------------------------------------------
+ 
+Context Fields 
+        GISJOIN:     GIS Join Match Code
+        YEAR:        Data File Year
+        STUSAB:      State Postal Abbreviation
+        REGIONA:     Region Code
+        DIVISIONA:   Division Code
+        STATE:       State Name
+        STATEA:      State Code
+        COUNTY:      County Name
+        COUNTYA:     County Code
+        COUSUBA:     County Subdivision Code
+        PLACEA:      Place/Remainder Code
+        TRACTA:      Census Tract Code
+        BLKGRPA:     Block Group Code
+        CONCITA:     Consolidated City Code
+        AIANHHA:     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
+        RES_ONLYA:   American Indian Area/Alaska Native Area (Reservation or Statistical Entity Only) Code
+        TRUSTA:      American Indian Area (Off-Reservation Trust Land Only)/Hawaiian Home Land Code
+        AIHHTLI:     American Indian/Hawaiian Home Land Trust Land Indicator
+        AITSA:       Tribal Subdivision/Remainder Code
+        ANRCA:       Alaska Native Regional Corporation Code
+        CBSAA:       Metropolitan Statistical Area/Micropolitan Statistical Area Code
+        CSAA:        Combined Statistical Area Code
+        METDIVA:     Metropolitan Division Code
+        UAA:         Urban Area Code
+        CDCURRA:     Congressional District (2025-2027, 119th Congress) Code
+        SLDUA:       State Legislative District (Upper Chamber) Code
+        SLDLA:       State Legislative District (Lower Chamber) Code
+        ZCTA5A:      5-Digit ZIP Code Tabulation Area Code
+        SUBMCDA:     Subminor Civil Division Code
+        SDELMA:      School District (Elementary)/Remainder Code
+        SDSECA:      School District (Secondary)/Remainder Code
+        SDUNIA:      School District (Unified)/Remainder Code
+        PCI:         Principal City Indicator
+        PUMAA:       Public Use Microdata Area Code
+        GEO_ID:      Census Geographic Identifier
+        BTTRA:       Tribal Census Tract Code
+        BTBGA:       Tribal Block Group Code
+        TL_GEO_ID:   TIGER/Line Shapefile Geographic Identifier
+ 
+Data Type (E):
+    Estimates
+ 
+        NAME_E:      Area Name
+ 
+    Table 1:     Total Population
+    Universe:    Total population
+    Source code: B01003
+    NHGIS code:  AUO6
+        AUO6E001:    Total
+ 
+    Table 2:     Race
+    Universe:    Total population
+    Source code: B02001
+    NHGIS code:  AUO7
+        AUO7E001:    Total
+        AUO7E002:    White alone
+        AUO7E003:    Black or African American alone
+        AUO7E004:    American Indian and Alaska Native alone
+        AUO7E005:    Asian alone
+        AUO7E006:    Native Hawaiian and Other Pacific Islander alone
+        AUO7E007:    Some Other Race alone
+        AUO7E008:    Two or More Races
+        AUO7E009:    Two or More Races: Two races including Some Other Race
+        AUO7E010:    Two or More Races: Two races excluding Some Other Race, and three or more races
+ 
+    Table 3:     Hispanic or Latino Origin
+    Universe:    Total population
+    Source code: B03003
+    NHGIS code:  AUPG
+        AUPGE001:    Total
+        AUPGE002:    Not Hispanic or Latino
+        AUPGE003:    Hispanic or Latino
+ 
+    Table 4:     Travel Time to Work
+    Universe:    Workers 16 years and over who did not work from home
+    Source code: B08303
+    NHGIS code:  AUPY
+        AUPYE001:    Total
+        AUPYE002:    Less than 5 minutes
+        AUPYE003:    5 to 9 minutes
+        AUPYE004:    10 to 14 minutes
+        AUPYE005:    15 to 19 minutes
+        AUPYE006:    20 to 24 minutes
+        AUPYE007:    25 to 29 minutes
+        AUPYE008:    30 to 34 minutes
+        AUPYE009:    35 to 39 minutes
+        AUPYE010:    40 to 44 minutes
+        AUPYE011:    45 to 59 minutes
+        AUPYE012:    60 to 89 minutes
+        AUPYE013:    90 or more minutes
+ 
+    Table 5:     Educational Attainment for the Population 25 Years and Over
+    Universe:    Population 25 years and over
+    Source code: B15003
+    NHGIS code:  AUQ8
+        AUQ8E001:    Total
+        AUQ8E002:    No schooling completed
+        AUQ8E003:    Nursery school
+        AUQ8E004:    Kindergarten
+        AUQ8E005:    1st grade
+        AUQ8E006:    2nd grade
+        AUQ8E007:    3rd grade
+        AUQ8E008:    4th grade
+        AUQ8E009:    5th grade
+        AUQ8E010:    6th grade
+        AUQ8E011:    7th grade
+        AUQ8E012:    8th grade
+        AUQ8E013:    9th grade
+        AUQ8E014:    10th grade
+        AUQ8E015:    11th grade
+        AUQ8E016:    12th grade, no diploma
+        AUQ8E017:    Regular high school diploma
+        AUQ8E018:    GED or alternative credential
+        AUQ8E019:    Some college, less than 1 year
+        AUQ8E020:    Some college, 1 or more years, no degree
+        AUQ8E021:    Associate's degree
+        AUQ8E022:    Bachelor's degree
+        AUQ8E023:    Master's degree
+        AUQ8E024:    Professional school degree
+        AUQ8E025:    Doctorate degree
+ 
+    Table 6:     Per Capita Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)
+    Universe:    Total population
+    Source code: B19301
+    NHGIS code:  AUSY
+        AUSYE001:    Per capita income in the past 12 months (in 2024 inflation-adjusted dollars)
+ 
+    Table 7:     Housing Units
+    Universe:    Housing units
+    Source code: B25001
+    NHGIS code:  AUUC
+        AUUCE001:    Total
+ 
+    Table 8:     Occupancy Status
+    Universe:    Housing units
+    Source code: B25002
+    NHGIS code:  AUUD
+        AUUDE001:    Total
+        AUUDE002:    Occupied
+        AUUDE003:    Vacant
+ 
+Data Type (M):
+    Margins of error
+ 
+        NAME_M:      Area Name
+ 
+    Table 1:     Total Population
+    Universe:    Total population
+    Source code: B01003
+    NHGIS code:  AUO6
+        AUO6M001:    Total
+ 
+    Table 2:     Race
+    Universe:    Total population
+    Source code: B02001
+    NHGIS code:  AUO7
+        AUO7M001:    Total
+        AUO7M002:    White alone
+        AUO7M003:    Black or African American alone
+        AUO7M004:    American Indian and Alaska Native alone
+        AUO7M005:    Asian alone
+        AUO7M006:    Native Hawaiian and Other Pacific Islander alone
+        AUO7M007:    Some Other Race alone
+        AUO7M008:    Two or More Races
+        AUO7M009:    Two or More Races: Two races including Some Other Race
+        AUO7M010:    Two or More Races: Two races excluding Some Other Race, and three or more races
+ 
+    Table 3:     Hispanic or Latino Origin
+    Universe:    Total population
+    Source code: B03003
+    NHGIS code:  AUPG
+        AUPGM001:    Total
+        AUPGM002:    Not Hispanic or Latino
+        AUPGM003:    Hispanic or Latino
+ 
+    Table 4:     Travel Time to Work
+    Universe:    Workers 16 years and over who did not work from home
+    Source code: B08303
+    NHGIS code:  AUPY
+        AUPYM001:    Total
+        AUPYM002:    Less than 5 minutes
+        AUPYM003:    5 to 9 minutes
+        AUPYM004:    10 to 14 minutes
+        AUPYM005:    15 to 19 minutes
+        AUPYM006:    20 to 24 minutes
+        AUPYM007:    25 to 29 minutes
+        AUPYM008:    30 to 34 minutes
+        AUPYM009:    35 to 39 minutes
+        AUPYM010:    40 to 44 minutes
+        AUPYM011:    45 to 59 minutes
+        AUPYM012:    60 to 89 minutes
+        AUPYM013:    90 or more minutes
+ 
+    Table 5:     Educational Attainment for the Population 25 Years and Over
+    Universe:    Population 25 years and over
+    Source code: B15003
+    NHGIS code:  AUQ8
+        AUQ8M001:    Total
+        AUQ8M002:    No schooling completed
+        AUQ8M003:    Nursery school
+        AUQ8M004:    Kindergarten
+        AUQ8M005:    1st grade
+        AUQ8M006:    2nd grade
+        AUQ8M007:    3rd grade
+        AUQ8M008:    4th grade
+        AUQ8M009:    5th grade
+        AUQ8M010:    6th grade
+        AUQ8M011:    7th grade
+        AUQ8M012:    8th grade
+        AUQ8M013:    9th grade
+        AUQ8M014:    10th grade
+        AUQ8M015:    11th grade
+        AUQ8M016:    12th grade, no diploma
+        AUQ8M017:    Regular high school diploma
+        AUQ8M018:    GED or alternative credential
+        AUQ8M019:    Some college, less than 1 year
+        AUQ8M020:    Some college, 1 or more years, no degree
+        AUQ8M021:    Associate's degree
+        AUQ8M022:    Bachelor's degree
+        AUQ8M023:    Master's degree
+        AUQ8M024:    Professional school degree
+        AUQ8M025:    Doctorate degree
+ 
+    Table 6:     Per Capita Income in the Past 12 Months (in 2024 Inflation-Adjusted Dollars)
+    Universe:    Total population
+    Source code: B19301
+    NHGIS code:  AUSY
+        AUSYM001:    Per capita income in the past 12 months (in 2024 inflation-adjusted dollars)
+ 
+    Table 7:     Housing Units
+    Universe:    Housing units
+    Source code: B25001
+    NHGIS code:  AUUC
+        AUUCM001:    Total
+ 
+    Table 8:     Occupancy Status
+    Universe:    Housing units
+    Source code: B25002
+    NHGIS code:  AUUD
+        AUUDM001:    Total
+        AUUDM002:    Occupied
+        AUUDM003:    Vacant
+ 
+--------------------------------------------------------------------------------
+Citation and Use of NHGIS Data
+--------------------------------------------------------------------------------
+ 
+All persons are granted a limited license to use this documentation and the
+accompanying data, subject to the following conditions:
+
+* REDISTRIBUTION: You will not redistribute the data without permission.
+
+  You may publish a subset of the data to meet journal requirements for accessing 
+  data related to a particular publication. Contact us for permission for any other 
+  redistribution; we will consider requests for free and commercial redistribution.
+
+* CITATION: You will cite NHGIS appropriately.
+
+    * Publications and research reports employing NHGIS data (either tabular or GIS) 
+      should include the following citation:
+
+        Jonathan Schroeder, David Van Riper, Steven Manson, Katherine Knowles, Tracy Kugler, Finn Roberts, and Steven Ruggles. 
+        IPUMS National Historical Geographic Information System: Version 20.0 
+        [dataset]. Minneapolis, MN: IPUMS. 2025. 
+        http://doi.org/10.18128/D050.V20.0
+
+    * For policy briefs, online resources, or articles in the popular press, we 
+      recommend that you cite the use of NHGIS data as follows:
+
+        IPUMS NHGIS, University of Minnesota, www.nhgis.org.
+
+These terms of use are a legally binding agreement. You can use the data only in 
+accordance with these terms, and any other use is a violation of the agreement. 
+Violations may result in revocation of the agreement and prohibition from using other 
+IPUMS data. If IPUMS or our partners are harmed from your violation, you are 
+responsible for all damages, including reasonable attorney's fees and expenses.
+        
+In addition, we request that users send us a copy of any publications, research
+reports, or educational material making use of the data or documentation.
+
+Send electronic material to: nhgis@umn.edu
+
+Printed matter should be sent to:
+
+    IPUMS NHGIS
+    Institute for Social Research and Data Innovation
+    University of Minnesota
+    50 Willey Hall
+    225 19th Ave S
+    Minneapolis, MN 55455
