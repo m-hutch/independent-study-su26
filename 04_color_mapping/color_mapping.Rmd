@@ -1,0 +1,330 @@
+---
+title: "Updates to Color Mapping Functions"
+author: "Mae Hutchison"
+date: "2026-06-29"
+output: 
+  html_document:
+    toc: true
+---
+
+# Source code
+
+<details>
+
+<summary><b>mapColorRamp()</b></summary>
+
+```{r mapColorRamp}
+mapColorRamp <- function(shape, column,
+                         breaks=8, break.style="quantile",
+                         map.title="Sequential Choropleth Map",
+                         palette="Oranges",
+                         colorblind=FALSE,
+                         reverse=FALSE,
+                         legend.title=column,
+                         legend.digits=3,
+                         legend.pos="bottomleft",
+                         legend.cex=1,
+                         legend.bty='n',
+                         legend.col=1,
+                         legend.inset=0,
+                         add.to.map=FALSE,
+                         plot.axes=TRUE,
+                         plot.border=grDevices::grey(0.9),
+                         na.color=grDevices::grey(0.96),
+                         na.label="NA",
+                         output.breaks=FALSE){
+  stopifnot(
+    "shape must be a SpatialPolygonsDataFrame" =
+      methods::is(shape, "SpatialPolygonsDataFrame")
+    ,"column must be a character string name of column" = methods::is(column, "character")
+    ,"column must be in shape spatial data frame" =
+      column %in% names(shape))
+
+  ## get data to plot
+  data <- shape[[column]]
+
+  if (length(unique(na.omit(data))) < 2) {
+    stop("column '", column
+         , "' has fewer than 2 unique non-NA values; cannot compute breaks.")
+  }
+
+  ## define breaks and color assignment
+  class.intervals <-  suppressWarnings( # supress warning for NAs
+    classInt::classIntervals(data, n=breaks, style=break.style)
+  )
+  breaks.vec <- as.numeric(class.intervals$brks)
+  pal <- .resolve_palette(palette, breaks, category='seq',
+                          reverse=reverse, colorblind=colorblind)
+  map.col <- pal[findInterval(data, breaks.vec, rightmost.closed=TRUE)]
+  legend.labs <- .legend_labels(round(breaks.vec,digits=legend.digits))
+
+  if (anyNA(data)){
+    map.col[is.na(data)] <- na.color       # Set NA's to light grey
+    pal <- c(pal[1:breaks], na.color)      # Augment legend color
+    legend.labs <- c(legend.labs, na.label)  # Augment legend name
+  }
+
+  # -- map panel --
+  sp::plot(shape, col=map.col
+           , border=plot.border
+           , axes=plot.axes,
+           add=add.to.map)
+  graphics::legend(legend.pos, title=legend.title
+                   ,legend=legend.labs
+                   , fill=pal
+                   , bty=legend.bty
+                   , ncol=legend.col
+                   , cex=legend.cex
+                   , inset = legend.inset)
+  graphics::title(map.title)
+  graphics::box()
+
+  if(output.breaks){
+    output <- list(class.intervals=class.intervals, pal=pal,
+                   legend.labs=legend.labs)
+    return(output)
+  }
+} 
+```
+
+</details>
+
+<details>
+
+<summary><b>palette_hist()</b></summary>
+
+```{r palette_hist}
+palette_hist <- function(class.intervals, pal = NULL, title = "", 
+                         equal.width = FALSE, bins = NULL) {
+
+  # Accept either a named list(class.intervals=, pal=) or separate arguments
+  if (is.list(class.intervals) &&
+      all(c("class.intervals", "pal") %in% names(class.intervals))) {
+    pal             <- class.intervals$pal
+    class.intervals <- class.intervals$class.intervals
+  }
+  if (is.null(pal)) stop("pal must be provided either as a separate argument or in the list")
+  
+  # Auto-enable equal.width if bins is explicitly supplied
+  if (!is.null(bins)) equal.width <- TRUE
+
+  main_title <- if (nchar(title) > 0) title else "Distribution"
+
+  if (!equal.width) {
+    graphics::hist(class.intervals$var,
+                   breaks = class.intervals$brks,
+                   freq   = FALSE,
+                   col    = pal,
+                   border = grDevices::grey(0.85),
+                   main   = main_title,
+                   xlab   = "Value",
+                   ylab   = "Density",
+                   las    = 1)
+
+  } else {
+    n_classes <- length(pal)
+
+    # Default: 5 equal-width bins per class interval
+    # Override with bins= but warn if not a clean multiple
+    if (is.null(bins)) {
+      bins <- n_classes * 5L
+    } else {
+      if (bins %% n_classes != 0L) {
+        warning(sprintf(
+          "bins (%d) is not a multiple of the number of class intervals (%d). Bar colors may not align cleanly with breaks.",
+          bins, n_classes
+        ))
+      }
+    }
+
+    # Force exact breakpoints so bins align with class-interval boundaries
+    data_range  <- range(class.intervals$var, na.rm = TRUE)
+    bin_breaks  <- seq(data_range[1], data_range[2], length.out = bins + 1)
+
+    h <- graphics::hist(class.intervals$var, breaks = bin_breaks, plot = FALSE)
+
+    bar_colors <- pal[
+      findInterval(h$mids, class.intervals$brks, rightmost.closed = TRUE)
+    ]
+
+    graphics::plot(h,
+                   col    = bar_colors,
+                   border = grDevices::grey(0.85),
+                   main   = main_title,
+                   freq   = FALSE,
+                   xlab   = "Value",
+                   ylab   = "Density",
+                   las    = 1)
+  }
+
+  graphics::abline(v   = class.intervals$brks,
+                   col = grDevices::grey(0.4),
+                   lty = 2,
+                   lwd = 0.8)
+}
+```
+
+</details>
+
+<details>
+
+<summary><b>Utility Functions</b></summary>
+
+```{r utility_functions}
+#' @noRd
+.legend_labels <- function(vec, under = "under", over = "over",
+                     between = "-", reverse = FALSE) {
+
+  if (length(vec) < 3)
+    stop("vec must have at least 3 elements")
+
+  if (reverse) {
+    vec   <- rev(vec)
+    under <- "over"
+    over  <- "under"
+  }
+
+  lx  <- length(vec)
+  res <- character(lx - 1)
+
+  res[1]      <- paste(under, vec[2])
+  res[lx - 1] <- paste(over,  vec[lx - 1])
+
+  if (lx > 3)
+    res[2:(lx - 2)] <- paste(vec[2:(lx - 2)], between, vec[3:(lx - 1)])
+
+  res
+}
+
+#' @noRd
+.resolve_palette <- function(palette, n, reverse = FALSE, category='any',
+                             colorblind=FALSE) {
+  options<-if(category %in% c('seq', 'div', 'qual')){
+    RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == category, ]
+  }else{
+    RColorBrewer::brewer.pal.info
+  }
+
+  if (colorblind){
+    options <- options[options$colorblind==TRUE,]
+  }
+
+  if (palette %in% rownames(options)){
+    cols <- RColorBrewer::brewer.pal(n, palette)
+  } else {
+    # Fall back to RColorBrewer Orange
+    cols <- RColorBrewer::brewer.pal(n, "Oranges")
+    warning("Could not resolve palette, defaulting to RColorBrewer Orange")
+  }
+
+  if (reverse) cols <- rev(cols)
+  cols
+}
+```
+
+</details>
+
+# MapColorRamp
+
+Major changes:  
+
+* input is now in the form `mapColorRamp(shape, column)`, requiring the `column` to be a character string name of a column in the data frame associated with the `SpatialPolygonsDataFrame`, `shape`\
+* added `palette` option where user can pass the name of any `RColorBrewer` sequential palette. Invalid options default back to `"Oranges"`  
+* added `output.breaks` option that returns a named list of the `ClasssIntervals` object, resolved color palette, and legend labels
+# added `break.style` option to pass to `ClassIntervals`
+
+```{r mcr_example_1}
+data("tractShp", package="TexMix")
+
+ramp <- mapColorRamp(tractShp, 'bad1500D', palette='YlOrRd', breaks=9,
+     map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
+     legend.title="Junk Food", output.breaks=TRUE)
+
+(ramp)
+
+# plot.classIntervals
+plot(ramp$class.intervals, pal=ramp$pal)
+```
+
+Passing a non-valid or non-sequential `RColorBrewer` palette throws a warning and reverts back to the default:
+
+```{r mcr_example_2}
+mapColorRamp(tractShp, 'bad1500D', palette='Set1', breaks=9,
+     map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
+     legend.title="Junk Food")
+```
+
+```{r mcr_example_2b}
+mapColorRamp(tractShp, 'bad1500D', palette='fakePalette', breaks=9,
+     map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
+     legend.title="Junk Food")
+```
+
+`break.style` allows for different break calculation strategies
+
+```{r mcr_example_3}
+equal <- mapColorRamp(tractShp, 'bad1500D', palette='PuBu'
+             , breaks=9, break.style = 'equal',
+     map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
+     legend.title="Junk Food", output.breaks = T)
+
+jenks <- mapColorRamp(tractShp, 'bad1500D', palette='BuGn'
+             , breaks=9, break.style = 'jenks',
+     map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
+     legend.title="Junk Food", output.breaks = T)
+```
+
+Other optional arguments exposed:
+```{r eval=FALSE}
+ colorblind=FALSE,
+ reverse=FALSE,
+ legend.title=column,
+ legend.digits=3,
+ legend.pos="bottomleft",
+ legend.cex=1,
+ legend.bty='n',
+ legend.col=1,
+ legend.inset=0,
+ add.to.map=FALSE,
+ plot.axes=TRUE,
+ plot.border=grDevices::grey(0.9),
+ na.color=grDevices::grey(0.96),
+ na.label="NA"
+```
+
+Note that `colorblind` argument is redundant at time of writing due to all
+sequential `RColorBrewer` palettes being colorblind safe; it is included
+for consistency with future implementations of `mapColorQual()` and `mapBiPolar()`.
+
+# palette_hist()
+
+`palette_hist()` can directly plot a colored histogram from the output
+of `mapColorRamp(output.breaks=TRUE)`
+
+```{r ph_example}
+palette_hist(ramp)
+```
+
+It can also accept a `classIntervals` and `pal` object separately
+```{r ph_example2}
+palette_hist(ramp$class.intervals, ramp$pal)
+```
+
+Force a standard histogram with equal-width bins:
+
+```{r}
+palette_hist(ramp, equal.width = T)
+```
+
+Manually set number of bins (forces equal-width bins):
+```{r}
+palette_hist(ramp, bins = 27)
+```
+
+Warning for bin-color misalignment:
+```{r}
+palette_hist(equal, bins = 6)
+```
+
+
+
