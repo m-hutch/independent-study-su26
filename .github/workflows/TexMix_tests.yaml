@@ -1,6 +1,7 @@
 name: Check TexMix Package
 
 on:
+  workflow_dispatch: # Enables manual triggering
   push:
     paths:
       - '02_TexMix/TexMix/**'
