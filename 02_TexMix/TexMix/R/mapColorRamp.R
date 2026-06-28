@@ -90,7 +90,7 @@ mapColorRamp <- function(shape, column,
   ## get data to plot
   data <- shape[[column]]
 
-  if (length(unique(na.omit(data))) < 2) {
+  if (length(unique(stats::na.omit(data))) < 2) {
     stop("column '", column
          , "' has fewer than 2 unique non-NA values; cannot compute breaks.")
   }

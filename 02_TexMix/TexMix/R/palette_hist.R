@@ -6,7 +6,8 @@
 #' @details The function \code{palette_hist} maps an \emph{interval scaled
 #' variable} by a \emph{sequetial color ramp}.
 #'
-#' @usage palette_hist(class.intervals, pal=NULL, title = "")
+#' @usage palette_hist(class.intervals, pal=NULL, title="",
+#'equal.width=FALSE, bins=NULL)
 #'
 #' @param class.intervals \code{ClassIntervals} object or named list with items
 #' \code{class.intervals} and \code{pal}

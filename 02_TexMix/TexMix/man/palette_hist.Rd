@@ -4,7 +4,8 @@
 \alias{palette_hist}
 \title{Function: creates a histogram of a color palette with set breaks}
 \usage{
-palette_hist(class.intervals, pal=NULL, title = "")
+palette_hist(class.intervals, pal=NULL, title="",
+equal.width=FALSE, bins=NULL)
 }
 \arguments{
 \item{class.intervals}{\code{ClassIntervals} object or named list with items
