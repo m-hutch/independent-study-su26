@@ -4,57 +4,92 @@
 \alias{mapColorRamp}
 \title{Function: Maps a sequential color theme}
 \usage{
-mapColorRamp(var.name, shape, breaks=8, map.title="",
-                    legend.title=deparse(substitute(var.name)),
-                    legend.pos="bottomleft", legend.cex=1, add.to.map=FALSE)
+mapColorRamp(shape, column, breaks=8, break.style="quantile",
+map.title="Sequential Choropleth Map", palette="Oranges", colorblind=FALSE,
+reverse=FALSE, legend.title=column, legend.digits=3, legend.pos="bottomleft",
+legend.cex=1, legend.bty='n', legend.col=1, legend.inset=0, add.to.map=FALSE,
+plot.axes=TRUE, plot.border=grDevices::grey(0.9), na.color=grDevices::grey(0.96),
+na.label="NA", output.breaks=FALSE)
 }
 \arguments{
-\item{var.name}{A variable to be mapped in a bipolar theme. If it is in a data-frame,
-then the data-frame must be refered to, e.g., \code{df$var}}
-
 \item{shape}{An existing spatial polygon or spatial polygon data-frame}
 
-\item{breaks}{Number of qunatiles. It needs to range the range of 3 to 9}
+\item{column}{A string name of a column in the data-frame of shape argument,
+to be mapped in a sequential theme.}
 
-\item{map.title}{Character string with map title}
+\item{breaks}{Number of breaks in color ramp, in the range of 3 to 9}
 
-\item{legend.title}{Character string with legend title (default=\code{var.name})}
+\item{break.style}{style passed to \code{classInt::classIntervals()} to determine
+method of calculating breaks}
 
-\item{legend.pos}{Location of legend in the map frame (default=\code{"bottomleft"})}
+\item{map.title}{Character string with map title
+(default=\code{"Sequential Choropleth Map"})}
+
+\item{palette}{Character string passed to \code{RColorBrewer::brewer.pal()}}
+
+\item{colorblind}{Logical indicating whether to use colorblind-friendly palettes}
+
+\item{reverse}{Logical indicating whether to reverse the color ramp}
+
+\item{legend.title}{Character string with legend title
+(default=\code{column})}
+
+\item{legend.digits}{Integer specifying the number of digits to show in the
+legend (default = \code{3})}
+
+\item{legend.pos}{Location of legend in the map frame passed to
+\code{graphics::legend()} (default=\code{"bottomleft"})}
 
 \item{legend.cex}{Relative font size of the legend}
 
-\item{add.to.map}{Logical to start a new map frame if \code{FALSE} or overlay onto an
-existing map frame if \code{TRUE}}
+\item{legend.bty}{Character string specifying the box type for the legend}
+
+\item{legend.col}{Character string specifying the legend border color
+(default = \code{"black"})}
+
+\item{legend.inset}{Numeric value specifying the inset of the legend
+(default = \code{0})}
+
+\item{add.to.map}{Logical to start a new map frame if \code{FALSE} or overlay
+onto an existing map frame if \code{TRUE}}
+
+\item{plot.axes}{Logical to plot axes (default=\code{TRUE})}
+
+\item{plot.border}{color of plot border (default=\code{grDevices::grey(0.9)})}
+
+\item{na.color}{color of NA value shapes (default=\code{grDevices::grey(0.96)})}
+
+\item{na.label}{Character string to label NA values in the legend
+(default=\code{"NA"})}
+
+\item{output.breaks}{Logical to return the break data (default=\code{FALSE})}
 }
 \value{
-\code{NULL}
+\code{NULL} or \code{list}
 }
 \description{
-\code{mapColorRamp} generates a map with a sequential theme of an interval scaled variable
+\code{mapColorRamp} generates a map with a sequential theme
+of an interval scaled variable
 }
 \details{
-The function \code{mapColorRamp} maps an \emph{interval scaled variable} by a
-  \emph{sequetial color ramp}. Quantiles values are coded in gradually increasing
-  intensities of oranges. A legend is generated. NA's are permitted.
+The function \code{mapColorRamp} maps an \emph{interval scaled
+variable} by a \emph{sequetial color ramp}. Quantiles values are coded in
+a sequential palette. A legend is generated. NA's are permitted.
 }
 \examples{
-validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]         # Remove 2 tracts with NA's
-mapColorQual(validTractShp$CITYPERI, validTractShp,
-             map.title="Cities and Peripherie in Dallas County",
-             legend.title="Regions")
-
-mapColorRamp(validTractShp$bad1500D, validTractShp, breaks=9,
+ramp <- mapColorRamp(tractShp, 'bad1500D', breaks=9,
              map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
-             legend.title="Junk Food")
+             legend.title="Junk Food", output.breaks=TRUE)
 
-hist(tractShp$LRRmedD)
-mapBiPolar(validTractShp$LRRmedD, validTractShp, break.value=0,
-           neg.breaks=5, pos.breaks=5,
-           map.title="LRR: log(f(junk food),f(healthy food))\nbw=medium",
-           legend.title="log relative risk")
+# plot distribution of breaks
+palette_hist(ramp)
+
+# or use plot.classIntervals
+plot(ramp$class.intervals, pal=ramp$pal)
 
 }
 \author{
 Michael Tiefelsdorf <tiefelsdorf@utdallas.edu>
+
+Mae Hutchison <mah230002@utdallas.edu>
 }

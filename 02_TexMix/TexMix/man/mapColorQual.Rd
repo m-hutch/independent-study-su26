@@ -41,17 +41,6 @@ validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]         # Remove 2 tracts w
 mapColorQual(validTractShp$CITYPERI, validTractShp,
              map.title="Cities and Peripherie in Dallas County",
              legend.title="Regions")
-
-mapColorRamp(validTractShp$bad1500D, validTractShp, breaks=9,
-             map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
-             legend.title="Junk Food")
-
-hist(tractShp$LRRmedD)
-mapBiPolar(validTractShp$LRRmedD, validTractShp, break.value=0,
-           neg.breaks=5, pos.breaks=5,
-           map.title="LRR: log(f(junk food),f(healthy food))\nbw=medium",
-           legend.title="log relative risk")
-
 }
 \author{
 Michael Tiefelsdorf <tiefelsdorf@utdallas.edu>

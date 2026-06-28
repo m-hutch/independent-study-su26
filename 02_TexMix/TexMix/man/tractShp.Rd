@@ -108,7 +108,7 @@ mapColorQual(validTractShp$CITYPERI, validTractShp,
              map.title="Cities and Peripherie in Dallas County",
              legend.title="Regions")
 
-mapColorRamp(validTractShp$bad1500D, validTractShp, breaks=9,
+mapColorRamp(validTractShp, 'bad1500D', breaks=9,
              map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
              legend.title="Junk Food")
 

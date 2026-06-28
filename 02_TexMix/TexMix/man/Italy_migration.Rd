@@ -12,6 +12,8 @@ A data frame with 95 rows and 96 columns. \code{ORIGIN} contains
   column indices match the \code{ID} field in \code{\link{ItalyShp}}.
 }
 \source{
+Anselin, L. (1995). Local indicators of spatial association—LISA.
+  \emph{Geographical Analysis}, 27(2), 93–115.
 }
 \description{
 An origin–destination matrix of internal migration counts among

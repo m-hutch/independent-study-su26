@@ -86,10 +86,10 @@ lower rates in the North and Central regions.
 ```{r map-fertility}
 sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
          xlim = bBox[1, ], ylim = bBox[2, ])
-mapColorRamp(ItalyShp$TOTFERTRAT, ItalyShp, breaks = 7,
-             map.title    = "Italy Fertility Rate",
-             legend.title = "Fertility Rate",
-             add.to.map   = TRUE, legend.cex = 0.7)
+#mapColorRamp(ItalyShp$TOTFERTRAT, ItalyShp, breaks = 7,
+#             map.title    = "Italy Fertility Rate",
+#             legend.title = "Fertility Rate",
+#             add.to.map   = TRUE, legend.cex = 0.7)
 ```
 
 ### Net migration ratio
