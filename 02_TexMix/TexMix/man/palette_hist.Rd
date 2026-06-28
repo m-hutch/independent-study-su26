@@ -13,6 +13,11 @@ palette_hist(class.intervals, pal=NULL, title = "")
 \item{pal}{a color palette from \code{RColorBrewer:brewer.pal}}
 
 \item{title}{optional title for the histogram}
+
+\item{equal.width}{Logical, determines if equal width bins should be used
+(default=\code{FALSE})}
+
+\item{bins}{numeric number of bins to use (forces \code{equal.width=T})}
 }
 \value{
 \code{NULL}

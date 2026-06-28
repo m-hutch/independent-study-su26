@@ -202,3 +202,78 @@ test_that("explicit pal arg takes precedence over list when list has no pal key"
   # Passing a raw classIntervals with an explicit pal should still work
   expect_silent(palette_hist(ci, pal = pal))
 })
+# ---------------------------------------------------------------------------
+# 9. equal.width PARAMETER
+# ---------------------------------------------------------------------------
+
+test_that("equal.width=TRUE runs without error", {
+  ci  <- make_class_intervals()
+  pal <- make_pal()
+  expect_silent(palette_hist(ci, pal, equal.width = TRUE))
+})
+
+test_that("equal.width=TRUE returns NULL invisibly", {
+  ci     <- make_class_intervals()
+  pal    <- make_pal()
+  result <- palette_hist(ci, pal, equal.width = TRUE)
+  expect_null(result)
+})
+
+test_that("equal.width=TRUE works with named list input", {
+  ramp <- make_ramp_list()
+  expect_silent(palette_hist(ramp, equal.width = TRUE))
+})
+
+# ---------------------------------------------------------------------------
+# 10. bins PARAMETER
+# ---------------------------------------------------------------------------
+
+test_that("passing bins without equal.width runs without error", {
+  ci  <- make_class_intervals()
+  pal <- make_pal()
+  expect_silent(palette_hist(ci, pal, bins = 25))
+})
+
+test_that("passing bins auto-sets equal.width (same result as explicit equal.width=TRUE)", {
+  ci  <- make_class_intervals(x = 1:100, n = 5)
+  pal <- make_pal(n = 5)
+
+  # Both calls should produce identical output — if either errored the
+  # auto-dispatch is broken
+  expect_silent(palette_hist(ci, pal, bins = 25))
+  expect_silent(palette_hist(ci, pal, equal.width = TRUE, bins = 25))
+})
+
+test_that("bins as a clean multiple of n_classes runs without warning", {
+  ci  <- make_class_intervals(n = 5)
+  pal <- make_pal(n = 5)
+  expect_silent(palette_hist(ci, pal, bins = 25))   # 25 = 5 * 5
+})
+
+test_that("bins not a multiple of n_classes produces a warning", {
+  ci  <- make_class_intervals(n = 5)
+  pal <- make_pal(n = 5)
+  expect_warning(
+    palette_hist(ci, pal, bins = 23),
+    regexp = "not a multiple"
+  )
+})
+
+test_that("bins=NULL with equal.width=TRUE defaults to n_classes * 5", {
+  # With 5 classes the default should be 25 bins — no error, no warning
+  ci  <- make_class_intervals(n = 5)
+  pal <- make_pal(n = 5)
+  expect_silent(palette_hist(ci, pal, equal.width = TRUE, bins = NULL))
+})
+
+test_that("large bins value runs without error", {
+  ci  <- make_class_intervals(x = 1:200, n = 5)
+  pal <- make_pal(n = 5)
+  expect_silent(palette_hist(ci, pal, bins = 100))
+})
+
+test_that("bins=1 per class (minimum sensible) runs without error", {
+  ci  <- make_class_intervals(n = 5)
+  pal <- make_pal(n = 5)
+  expect_silent(palette_hist(ci, pal, bins = 5))    # 1 bin per class
+})
