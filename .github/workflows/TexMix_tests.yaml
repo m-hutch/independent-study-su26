@@ -28,6 +28,9 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           working-directory: 02_TexMix/TexMix
+      
+      - name: Install devtools
+        run: Rscript -e "install.packages('devtools')"
 
       - name: Run devtools::check()
         run: |
