@@ -154,7 +154,7 @@ box()
 
 ## Building the Origin-Destination Data Frame
 
-`prepIJDf()` reshapes province-level attributes into a long-format OD data
+`flow2vec()` reshapes province-level attributes into a long-format OD data
 frame with one row per origin-destination pair (95² = 9,025 rows). With
 `logTrans = TRUE` and `zTrans = TRUE`, each positive numeric variable is
 expanded into log-standardized origin (`.iLZ`), destination (`.jLZ`), and
@@ -164,7 +164,7 @@ log-ratio (`.ijLZ`) columns.
 dfShort <- ItalyShp@data[, c("PROVNAME", "REGION", "TOTPOP94", "TOTFERTRAT",
                               "FEMMARAGE9", "DIVORCERAT", "ILLITERRAT", "TELEPERFAM")]
 dfShort$PROVNAME <- as.factor(dfShort$PROVNAME)
-df <- prepIJDf(dfShort, mij = mij, dij = dij, logTrans = TRUE, zTrans = TRUE)
+df <- flow2vec(dfShort, mij = mij, dij = dij, logTrans = TRUE, zTrans = TRUE)
 dim(df)
 ```
 

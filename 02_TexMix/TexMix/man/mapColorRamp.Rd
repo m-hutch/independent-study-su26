@@ -82,7 +82,7 @@ ramp <- mapColorRamp(tractShp, 'bad1500D', breaks=9,
              legend.title="Junk Food", output.breaks=TRUE)
 
 # plot distribution of breaks
-palette_hist(ramp)
+viewPaletteSpread(ramp)
 
 # or use plot.classIntervals
 plot(ramp$class.intervals, pal=ramp$pal)

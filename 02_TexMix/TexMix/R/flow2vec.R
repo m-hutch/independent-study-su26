@@ -57,13 +57,13 @@
 #' validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]
 #' # Use a small subset for illustration
 #' smallDf <- as.data.frame(validTractShp)[1:5, c("PERCAPINC", "PCTMINOR", "CITYPERI")]
-#' od <- prepIJDf(smallDf)
+#' od <- flow2vec(smallDf)
 #' head(od)
 #'
 #' # With log transformation
-#' od_log <- prepIJDf(smallDf[, c("PERCAPINC", "PCTMINOR")], logTrans=TRUE)
+#' od_log <- flow2vec(smallDf[, c("PERCAPINC", "PCTMINOR")], logTrans=TRUE)
 #' head(od_log)
-prepIJDf <- function(df, mij=NULL, dij=NULL, logTrans=FALSE, zTrans=FALSE){
+flow2vec <- function(df, mij=NULL, dij=NULL, logTrans=FALSE, zTrans=FALSE){
   ##############################################################################
   ## Build a long-format origin-destination (OD) dataframe from a wide-format
   ## input dataframe, expanding every variable into origin (.i), destination (.j)
@@ -222,4 +222,4 @@ prepIJDf <- function(df, mij=NULL, dij=NULL, logTrans=FALSE, zTrans=FALSE){
   od_df    <- do.call(data.frame, c(list(od_df), od_vars))
 
   return(od_df)
-} #end::prepIJDf
+} #end::flow2vec

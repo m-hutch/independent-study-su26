@@ -16,7 +16,7 @@ Description: A collection of functions and data - mostly from Texas - is provide
   as 1669 block groups also in 2018 in Dallas County. Cartographic, specialized regression and 
   data handling functions as well as data visualization functions are provided.
 Depends: R (>= 3.5.0)
-Imports: sp, RColorBrewer, classInt, Formula, methods
+Imports: sp, RColorBrewer, classInt, Formula, methods, graphics
 Suggests: 
     spatstat,
     smacpod,

@@ -1,21 +1,27 @@
 #' @title Function: creates a histogram of a color palette with set breaks
 #'
-#' @description \code{palette_hist} generates a histogram of a color palette
+#' @description \code{viewPaletteSpread} generates a histogram of a color palette
 #' of an interval scaled variable
 #'
-#' @details The function \code{palette_hist} maps an \emph{interval scaled
+#' @details The function \code{viewPaletteSpread} maps an \emph{interval scaled
 #' variable} by a \emph{sequetial color ramp}.
 #'
-#' @usage palette_hist(class.intervals, pal=NULL, title="",
-#'equal.width=FALSE, bins=NULL)
+#' @usage viewPaletteSpread(class.intervals, pal=NULL, title="",
+#'equal.width=TRUE, bins=NULL, density=TRUE, density.bw="nrd",
+#'density.kernel="gaussian", density.adjust=1, ColorRamp.breaks=FALSE)
 #'
 #' @param class.intervals \code{ClassIntervals} object or named list with items
 #' \code{class.intervals} and \code{pal}
 #' @param pal a color palette from \code{RColorBrewer:brewer.pal}
 #' @param title optional title for the histogram
 #' @param equal.width Logical, determines if equal width bins should be used
-#' (default=\code{FALSE})
+#' (default=\code{TRUE})
 #' @param bins numeric number of bins to use (forces \code{equal.width=T})
+#' @param density Logical, displays estimated density curve over plot (default=\code{TRUE})
+#' @param density.bw bandwidth argument passed to \code{stats::density()} function
+#' @param density.kernel kernel argument passed to \code{stats::density()} function
+#' @param density.adjust bandwidth adjustment multiplier passed to \code{stats::density()} function
+#' @param ColorRamp.breaks Logical, displays exact breakpoints that the color ramp changes
 #'
 #' @export
 #' @return \code{NULL}
@@ -25,12 +31,15 @@
 #'              map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
 #'              legend.title="Junk Food", output.breaks=TRUE)
 #'
-#'palette_hist(ramp)
+#'viewPaletteSpread(ramp)
 #'
-#'palette_hist(ramp$class.intervals, ramp$pal)
+#'viewPaletteSpread(ramp$class.intervals, ramp$pal)
 #'
-palette_hist <- function(class.intervals, pal = NULL, title = "",
-                         equal.width = FALSE, bins = NULL) {
+viewPaletteSpread <- function(class.intervals, pal = NULL, title = "",
+                         equal.width = TRUE, bins = NULL, density=TRUE,
+                         density.bw="nrd", density.kernel="gaussian",
+                         density.adjust=1,
+                         ColorRamp.breaks=FALSE) {
 
   # Accept either a named list(class.intervals=, pal=) or separate arguments
   if (is.list(class.intervals) &&
@@ -66,9 +75,12 @@ palette_hist <- function(class.intervals, pal = NULL, title = "",
     } else {
       if (bins %% n_classes != 0L) {
         warning(sprintf(
-          "bins (%d) is not a multiple of the number of class intervals (%d). Bar colors may not align cleanly with breaks.",
+          "bins (%d) is not a multiple of the number of class intervals (%d). Bar colors may not align cleanly with breaks. ",
           bins, n_classes
         ))
+        if(!ColorRamp.breaks){
+          warning("Consider setting ColorRamp.breaks=TRUE to see exact color break points")
+        }
       }
     }
 
@@ -92,8 +104,17 @@ palette_hist <- function(class.intervals, pal = NULL, title = "",
                    las    = 1)
   }
 
+  if(density){
+    dx <- density(class.intervals$var,
+                  kernel=density.kernel, bw=density.bw, adjust=density.adjust)
+    # Add density
+    graphics::lines(dx, lwd = 2, col = "black")
+  }
+
+  if(ColorRamp.breaks){
   graphics::abline(v   = class.intervals$brks,
                    col = grDevices::grey(0.4),
                    lty = 2,
                    lwd = 0.8)
+  }
 }
