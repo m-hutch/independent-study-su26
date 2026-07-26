@@ -12,3 +12,8 @@ polygon_final_latlon <- st_transform(polygon_simple_utm, crs = 4326) # (WGS 84)
 
 spatial_poly_df <- as(polygon_final_latlon, "Spatial")
 save(spatial_poly_df, file=output_pth)
+
+rdata <-
+path <- "/Users/maehutch/Library/CloudStorage/Box-Box/TexMix/"
+library(sf)
+st_write(rdata, path)

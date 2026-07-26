@@ -48,10 +48,10 @@ resolve_county_fips <- function(state, counties) {
     matched <- fc
   }else{
   target     <- paste0(str_trim(counties), " County")
-
-
   matched <- fc |> filter(county %in% target)
   }
+
+
 
   matched_names <- str_remove(matched$county, " County$")
   missing       <- setdiff(str_trim(counties), matched_names)
@@ -64,15 +64,79 @@ resolve_county_fips <- function(state, counties) {
   }
 
   setNames(matched$county_code, matched_names)
-
 }
+
+# ── 1c. Optional: population-pyramid & institutionalized-population vars ────
+# NOT pulled by default -- pass include_pyramid = TRUE to get_acs_shp() to
+# include these. Adds ~48 columns: single-year/cohort male & female age
+# bands from Table B01001 (for population pyramid charts), plus
+# institutionalized-population counts by sex from Table B26217 (adult
+# correctional facilities, military quarters/ships). These are RAW counts,
+# not percentages -- meant to feed directly into a pyramid chart.
+
+pyramid_vars <- c(
+  # Population pyramid age/sex cohorts (Table B01001)
+  MALE_0_TO_5     = "B01001_003",
+  MALE_5_TO_10    = "B01001_004",
+  MALE_10_TO_15   = "B01001_005",
+  MALE_15_TO_18   = "B01001_006",
+  MALE_18_TO_20   = "B01001_007",
+  MALE_20         = "B01001_008",
+  MALE_21         = "B01001_009",
+  MALE_22_TO_25   = "B01001_010",
+  MALE_25_TO_30   = "B01001_011",
+  MALE_30_TO_35   = "B01001_012",
+  MALE_35_TO_40   = "B01001_013",
+  MALE_40_TO_45   = "B01001_014",
+  MALE_45_TO_50   = "B01001_015",
+  MALE_50_TO_55   = "B01001_016",
+  MALE_55_TO_60   = "B01001_017",
+  MALE_60_TO_62   = "B01001_018",
+  MALE_62_TO_65   = "B01001_019",
+  MALE_65_TO_67   = "B01001_020",
+  MALE_67_TO_70   = "B01001_021",
+  MALE_70_TO_75   = "B01001_022",
+  MALE_75_TO_80   = "B01001_023",
+  MALE_80_TO_85   = "B01001_024",
+  MALE_85_PLUS    = "B01001_025",
+  FEMALE_0_TO_5   = "B01001_027",
+  FEMALE_5_TO_10  = "B01001_028",
+  FEMALE_10_TO_15 = "B01001_029",
+  FEMALE_15_TO_18 = "B01001_030",
+  FEMALE_18_TO_20 = "B01001_031",
+  FEMALE_20       = "B01001_032",
+  FEMALE_21       = "B01001_033",
+  FEMALE_22_TO_25 = "B01001_034",
+  FEMALE_25_TO_30 = "B01001_035",
+  FEMALE_30_TO_35 = "B01001_036",
+  FEMALE_35_TO_40 = "B01001_037",
+  FEMALE_40_TO_45 = "B01001_038",
+  FEMALE_45_TO_50 = "B01001_039",
+  FEMALE_50_TO_55 = "B01001_040",
+  FEMALE_55_TO_60 = "B01001_041",
+  FEMALE_60_TO_62 = "B01001_042",
+  FEMALE_62_TO_65 = "B01001_043",
+  FEMALE_65_TO_67 = "B01001_044",
+  FEMALE_67_TO_70 = "B01001_045",
+  FEMALE_70_TO_75 = "B01001_046",
+  FEMALE_75_TO_80 = "B01001_047",
+  FEMALE_80_TO_85 = "B01001_048",
+  FEMALE_85_PLUS  = "B01001_049",
+
+  # Institutionalized population by sex (Table B26217)
+  PRISON_MALE     = "B26217_011",
+  PRISON_FEMALE   = "B26217_012",
+  MILITARY_MALE   = "B26217_026",
+  MILITARY_FEMALE = "B26217_027"
+)
 
 # ── 2. Variable list builder ─────────────────────────────────────────────────
 # Rebuilds the named core variable vector + dynamically-detected multi-cell
 # groups (English proficiency, health insurance) for a given year/survey,
-# since ACS table structures can shift slightly across vintages.
+# since ACS table structures can shift slightly across vintages. Optionally
+# folds in the population-pyramid / institutionalized-population variables.
 
-build_variable_list <- function(year, survey = "acs5") {
+build_variable_list <- function(year, survey = "acs5", include_pyramid = FALSE) {
 
   vars_lu <- load_variables(year, survey)
 
@@ -158,6 +222,10 @@ build_variable_list <- function(year, survey = "acs5") {
     B_PRE1940     = "B25034_011"
   )
 
+  if (isTRUE(include_pyramid)) {
+    core_vars <- c(core_vars, pyramid_vars)
+  }
+
   all_vars <- c(
     core_vars,
     setNames(eng_ltevw, eng_ltevw),
@@ -165,10 +233,11 @@ build_variable_list <- function(year, survey = "acs5") {
   )
 
   list(
-    core_vars = core_vars,
-    eng_ltevw = eng_ltevw,
-    no_ins    = no_ins,
-    all_vars  = all_vars
+    core_vars        = core_vars,
+    eng_ltevw         = eng_ltevw,
+    no_ins            = no_ins,
+    all_vars          = all_vars,
+    pyramid_included  = isTRUE(include_pyramid)
   )
 }
 
@@ -354,13 +423,14 @@ fetch_workers_working <- function(geography, state, county_fips, year, survey, l
 # ourselves, one get_acs() call per county, and stitch the results together.
 
 pull_acs_data <- function(geography,
-                          year        = 2024,
-                          survey      = "acs5",
-                          county_fips = NULL,   # named vector: name = friendly county name, value = FIPS code
-                          state       = "TX",
-                          geometry    = TRUE) {
+                          year             = 2024,
+                          survey           = "acs5",
+                          county_fips      = NULL,   # named vector: name = friendly county name, value = FIPS code
+                          state            = "TX",
+                          geometry         = TRUE,
+                          include_pyramid  = FALSE) {
 
-  vc <- build_variable_list(year, survey)
+  vc <- build_variable_list(year, survey, include_pyramid = include_pyramid)
 
   available_vars <- probe_table_availability(
     vc$all_vars, geography, state, county_fips, year, survey
@@ -532,17 +602,23 @@ compute_derived_vars <- function(df, var_meta, daytime_pop = NULL, workers_worki
 # upstream (dropped table or failed calc) simply doesn't appear in the
 # output, rather than throwing an "object not found" error here.
 
-select_final_cols <- function(df, daytime_pop_requested = FALSE) {
+select_final_cols <- function(df, daypop_attempted = FALSE, pyramid_requested = FALSE) {
 
-  daypop_cols <- c("DAYPOP", "PCTDAYPOP")   # opt-in, needs daytime_pop supplied
+  # opt-in: only appear if a daytime_pop table was supplied, OR DAYPOP was
+  # successfully estimated via workers-working-here data
+  daypop_cols <- c("DAYPOP", "PCTDAYPOP", "WORKERS_WORKING")
+
+  # opt-in: only appear if include_pyramid = TRUE was passed to get_acs_shp()
+  pyramid_cols <- names(pyramid_vars)
 
   wanted <- c(
     "GEOID", "NAME", "LANDAREA", "WATERAREA", "POPDEN",
     daypop_cols,
     "MALE", "FEMALE", "MEDAGE",
+    pyramid_cols,
     "PCTWHITE", "PCTBLACK", "PCTASIAN", "PCTHISPAN", "PCTMINOR",
     "PCTNOHIGH", "PCTUNIVDEG", "PCTBADENG",
-    "PCTPUB2WRK", "TIME2WORK",
+    "PCTPUB2WRK", "TIME2WORK", "WORKERS_LIVE",
     "HHMEDINC", "MEDFAMINC", "PERCAPINC",
     "PCTPOPPOV", "PCTFAMPOV",
     "PCTUNEMP",
@@ -559,19 +635,22 @@ select_final_cols <- function(df, daytime_pop_requested = FALSE) {
   rename_map <- c(
     NIGHTPOP = "NIGHTPOPE", MALE = "MALEE", FEMALE = "FEMALEE", MEDAGE = "MEDAGEE",
     HHMEDINC = "HHMEDINCE", MEDFAMINC = "MEDFAMINCE", PERCAPINC = "PERCAPINCE",
-    MEDVALHOME = "MEDVALHOMEE"
+    MEDVALHOME = "MEDVALHOMEE",
+    setNames(paste0(pyramid_cols, "E"), pyramid_cols)
   )
   present_renames <- rename_map[rename_map %in% names(df)]
   if (length(present_renames) > 0) {
     df <- df |> rename(!!!present_renames)
   }
 
-  # DAYPOP/PCTDAYPOP are opt-in (only computed if you pass a daytime_pop
-  # table into get_acs_shp()) -- only warn about those if the caller
-  # actually asked for them and they still didn't come through. POPDEN is
-  # always expected (computed from NIGHTPOP alone), so it's treated as a
-  # core column below.
-  core_wanted <- setdiff(wanted, daypop_cols)
+  # DAYPOP/PCTDAYPOP/WORKERS_WORKING are opt-in -- they only exist if a
+  # daytime_pop table was supplied, or if the workers-working-here estimate
+  # succeeded (ACS B08604 at county level, LODES WAC at tract/block group).
+  # Population-pyramid columns are opt-in via include_pyramid = TRUE. Only
+  # warn about either group if it was actually requested and still didn't
+  # come through. WORKERS_LIVE and POPDEN are always expected
+  # (straightforward ACS-derived values), so they're core columns.
+  core_wanted <- setdiff(wanted, c(daypop_cols, pyramid_cols))
   missing <- setdiff(c("NIGHTPOP", core_wanted), names(df))
   if (length(missing) > 0) {
     warning(sprintf(
@@ -580,12 +659,22 @@ select_final_cols <- function(df, daytime_pop_requested = FALSE) {
     ), call. = FALSE)
   }
 
-  if (daytime_pop_requested) {
-    missing_daypop <- setdiff(daypop_cols, names(df))
+  if (daypop_attempted) {
+    missing_daypop <- setdiff(c("DAYPOP", "PCTDAYPOP"), names(df))
     if (length(missing_daypop) > 0) {
       warning(sprintf(
-        "A daytime_pop table was supplied, but these columns still couldn't be computed: %s",
+        "DAYPOP estimation was attempted, but these columns still couldn't be computed (see earlier warnings for the specific cause): %s",
         paste(missing_daypop, collapse = ", ")
+      ), call. = FALSE)
+    }
+  }
+
+  if (pyramid_requested) {
+    missing_pyramid <- setdiff(pyramid_cols, names(df))
+    if (length(missing_pyramid) > 0) {
+      warning(sprintf(
+        "include_pyramid = TRUE was requested, but these columns weren't available at this geography/year: %s",
+        paste(missing_pyramid, collapse = ", ")
       ), call. = FALSE)
     }
   }
@@ -593,16 +682,35 @@ select_final_cols <- function(df, daytime_pop_requested = FALSE) {
   df |> select(any_of(c("GEOID", "NAME", "LANDAREA", "WATERAREA", "NIGHTPOP")), any_of(wanted), any_of("geometry"))
 }
 
+
 # ── 9. Top-level wrapper: one call per geography/year/survey ────────────────
 #
-#   geography   "county" | "tract" | "block group"
-#   year        ACS end year, e.g. 2024
-#   survey      "acs5" (default) or "acs1"
-#   counties    character vector of county names, default = nctcog_counties
-#   state       state abbreviation, default "TX"
-#   geometry    TRUE/FALSE, include sf geometry
-#   daytime_pop optional data frame with GEOID + daytime_pop_est
-#   save_path   if not NULL, saves the resulting object (.rda) to this path
+#   geography      "county" | "tract" | "block group"
+#   year           ACS end year, e.g. 2024
+#   survey         "acs5" (default) or "acs1"
+#   counties       character vector of county names, default = nctcog_counties
+#   state          state abbreviation, default "TX"
+#   geometry       TRUE/FALSE, include sf geometry
+#   daytime_pop    optional data frame with GEOID + daytime_pop_est -- if
+#                  supplied, used directly for DAYPOP/PCTDAYPOP and takes
+#                  priority over estimate_daypop below
+#   estimate_daypop  TRUE/FALSE (default TRUE) -- if daytime_pop isn't
+#                  supplied, estimate DAYPOP as
+#                  NIGHTPOP + workers working here - workers living here.
+#                  Workers working here comes from ACS B08604 at county
+#                  level, or LEHD LODES (via the 'lehdr' package) at tract/
+#                  block group level, since ACS doesn't publish
+#                  workplace-geography tables below county. WORKERS_LIVE
+#                  and (when available) WORKERS_WORKING are added to the
+#                  output regardless. Set FALSE to skip this entirely.
+#   lodes_year     optional -- LODES data year to use for the tract/block
+#                  group fallback, if it should differ from `year`
+#   include_pyramid  TRUE/FALSE (default FALSE) -- adds ~48 raw-count columns:
+#                  single-year/cohort male & female age bands (Table B01001)
+#                  for population pyramid charts, plus institutionalized
+#                  population by sex (adult correctional facilities,
+#                  military quarters/ships -- Table B26217)
+#   save_path      if not NULL, saves the resulting object (.rda) to this path
 #
 # Returns an sf/tibble object with the same column layout as the original
 # countyShp script, ready to use at whichever geography you asked for.
@@ -610,13 +718,16 @@ select_final_cols <- function(df, daytime_pop_requested = FALSE) {
 # depends on one, is dropped with a warning() rather than erroring out.
 
 get_acs_shp <- function(geography,
-                        year        = 2024,
-                        survey      = "acs5",
-                        counties    = "ALL",
-                        state       = "TX", # TX FIPS code is 48
-                        geometry    = TRUE,
-                        daytime_pop = NULL,
-                        save_path   = NULL) {
+                        year            = 2024,
+                        survey          = "acs5",
+                        counties        = nctcog_counties,
+                        state           = "TX",
+                        geometry        = TRUE,
+                        daytime_pop     = NULL,
+                        estimate_daypop = TRUE,
+                        lodes_year      = NULL,
+                        include_pyramid = FALSE,
+                        save_path       = NULL) {
 
   # Resolve friendly county names -> exact FIPS codes ONCE, up front. Every
   # downstream call (probe, pull, TIGER lookup) uses FIPS codes from here on,
@@ -629,7 +740,8 @@ get_acs_shp <- function(geography,
 
   raw <- pull_acs_data(
     geography = geography, year = year, survey = survey,
-    county_fips = county_fips, state = state, geometry = geometry
+    county_fips = county_fips, state = state, geometry = geometry,
+    include_pyramid = include_pyramid
   )
 
   var_meta <- attr(raw, "var_meta")
@@ -638,9 +750,25 @@ get_acs_shp <- function(geography,
 
   merged <- raw |> left_join(tiger, by = "GEOID")
 
-  derived <- compute_derived_vars(merged, var_meta, daytime_pop = daytime_pop)
+  # If no daytime_pop table was supplied, try to estimate DAYPOP via the
+  # workers-working-here formula (county -> ACS B08604, tract/bg -> LODES).
+  workers_working <- NULL
+  daypop_attempted <- !is.null(daytime_pop)
+  if (is.null(daytime_pop) && isTRUE(estimate_daypop)) {
+    daypop_attempted <- TRUE
+    workers_working <- fetch_workers_working(
+      geography = geography, state = state, county_fips = county_fips,
+      year = year, survey = survey, lodes_year = lodes_year
+    )
+  }
 
-  final_shp <- select_final_cols(derived, daytime_pop_requested = !is.null(daytime_pop))
+  derived <- compute_derived_vars(
+    merged, var_meta, daytime_pop = daytime_pop, workers_working = workers_working
+  )
+
+  final_shp <- select_final_cols(
+    derived, daypop_attempted = daypop_attempted, pyramid_requested = include_pyramid
+  )
 
   if (!is.null(save_path)) {
     save(final_shp, file = save_path)
@@ -655,6 +783,10 @@ get_acs_shp <- function(geography,
 # ══════════════════════════════════════════════════════════════════════════
 
 # --- Tract-level, all 16 NCTCOG counties, 2024 ACS5 ---
+# By default (estimate_daypop = TRUE), DAYPOP is estimated automatically as
+# NIGHTPOP + workers working here - workers living here, using LODES data
+# (requires install.packages("lehdr") once). WORKERS_LIVE and
+# WORKERS_WORKING are included in the output alongside DAYPOP/PCTDAYPOP.
 # nctcog_tractShp <- get_acs_shp(
 #   geography = "tract",
 #   year      = 2024,
@@ -676,21 +808,17 @@ get_acs_shp <- function(geography,
 # )
 
 # --- County-level, single county, different year ---
-# dallas_2019 <- get_acs_shp(
-#   geography = "county",
-#   year      = 2019,
-#   counties  = "Dallas",
-#   save_path = "Dallas_county_2019.rda"
-# )
-
-# --- County-level, all texas counties ---
-texas_2024 <- get_acs_shp(
+# County-level DAYPOP estimation uses ACS B08604 directly (no lehdr needed).
+dallas_2019 <- get_acs_shp(
   geography = "county",
   year      = 2024,
-  save_path = "TX_counties.rda"
+  counties  = "Dallas",
+  include_pyramid = TRUE,
+  save_path = "Dallas_county_2019.rda"
 )
 
-# --- Tract-level with the daytime population join ---
+# --- Tract-level with your OWN daytime population table instead ---
+# Supplying daytime_pop always takes priority over the automatic estimate.
 # nctcog_tractShp_daypop <- get_acs_shp(
 #   geography   = "tract",
 #   year        = 2024,
@@ -698,6 +826,39 @@ texas_2024 <- get_acs_shp(
 #   daytime_pop = hybrid_daytime_pop,
 #   save_path   = "NCTCOG_tractShp_daypop.rda"
 # )
+
+# --- Skip DAYPOP estimation entirely (e.g. no internet access for LODES,
+#     or you just don't need it) ---
+# nctcog_tractShp_nodaypop <- get_acs_shp(
+#   geography       = "tract",
+#   year            = 2024,
+#   counties        = nctcog_counties,
+#   estimate_daypop = FALSE,
+#   save_path       = "NCTCOG_tractShp_nodaypop.rda"
+# )
+
+# --- Use a specific LODES year for the tract/block-group workers-working
+#     estimate, if it should differ from the ACS year (LODES releases lag
+#     behind the current year) ---
+# nctcog_tractShp_2024 <- get_acs_shp(
+#   geography  = "tract",
+#   year       = 2024,
+#   counties   = nctcog_counties,
+#   lodes_year = 2022,
+#   save_path  = "NCTCOG_tractShp.rda"
+# )
+
+# --- Include population pyramid + institutionalized population variables ---
+# Adds MALE_0_TO_5 ... FEMALE_85_PLUS (raw counts, Table B01001) plus
+# PRISON_MALE, PRISON_FEMALE, MILITARY_MALE, MILITARY_FEMALE (Table B26217).
+tx_countyShp_pyramid <- get_acs_shp(
+  geography       = "county",
+  year            = 2024,
+  counties        = "ALL",
+  include_pyramid = TRUE,
+  save_path       = "TX_countyShp_pyramid.rda"
+)
+
 
 # --- Capture warnings explicitly if you want to log/inspect what was
 #     dropped, rather than just having them print to the console ---
