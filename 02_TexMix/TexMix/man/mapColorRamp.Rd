@@ -4,12 +4,12 @@
 \alias{mapColorRamp}
 \title{Function: Maps a sequential color theme}
 \usage{
-mapColorRamp(shape, column, breaks=8, break.style="quantile",
-map.title="Sequential Choropleth Map", palette="Oranges", colorblind=FALSE,
-reverse=FALSE, legend.title=column, legend.digits=3, legend.pos="bottomleft",
-legend.cex=1, legend.bty='n', legend.col=1, legend.inset=0, add.to.map=FALSE,
-plot.axes=TRUE, plot.border=grDevices::grey(0.9), na.color=grDevices::grey(0.96),
-na.label="NA", output.breaks=FALSE)
+mapColorRamp(shape,column,breaks=8,break.style="quantile",
+map.title="Sequential Choropleth",palette="Oranges",colorblind=F,reverse=F,
+legend.title=column,legend.digits=3,legend.pos="bottomleft",legend.cex=1,
+legend.bty='n',legend.col=1,legend.inset=0,legend.bg="transparent",add.to.map=F,
+plot.axes=T,plot.border=grDevices::grey(0.9),na.color=grDevices::grey(0.96),
+na.label="NA",output.breaks=F)
 }
 \arguments{
 \item{shape}{An existing spatial polygon or spatial polygon data-frame}
@@ -49,6 +49,8 @@ legend (default = \code{3})}
 
 \item{legend.inset}{Numeric value specifying the inset of the legend
 (default = \code{0})}
+
+\item{legend.bg}{Color for legend background (default=\code{"transparent"})}
 
 \item{add.to.map}{Logical to start a new map frame if \code{FALSE} or overlay
 onto an existing map frame if \code{TRUE}}

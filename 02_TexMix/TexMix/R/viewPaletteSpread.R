@@ -105,7 +105,7 @@ viewPaletteSpread <- function(class.intervals, pal = NULL, title = "",
   }
 
   if(density){
-    dx <- density(class.intervals$var,
+    dx <- density(stats::na.omit(class.intervals$var),
                   kernel=density.kernel, bw=density.bw, adjust=density.adjust)
     # Add density
     graphics::lines(dx, lwd = 2, col = "black")

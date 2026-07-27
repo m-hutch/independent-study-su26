@@ -7,12 +7,12 @@
 #' variable} by a \emph{sequetial color ramp}. Quantiles values are coded in
 #' a sequential palette. A legend is generated. NA's are permitted.
 #'
-#' @usage mapColorRamp(shape, column, breaks=8, break.style="quantile",
-#'map.title="Sequential Choropleth Map", palette="Oranges", colorblind=FALSE,
-#'reverse=FALSE, legend.title=column, legend.digits=3, legend.pos="bottomleft",
-#'legend.cex=1, legend.bty='n', legend.col=1, legend.inset=0, add.to.map=FALSE,
-#'plot.axes=TRUE, plot.border=grDevices::grey(0.9), na.color=grDevices::grey(0.96),
-#'na.label="NA", output.breaks=FALSE)
+#' @usage mapColorRamp(shape,column,breaks=8,break.style="quantile",
+#'map.title="Sequential Choropleth",palette="Oranges",colorblind=F,reverse=F,
+#'legend.title=column,legend.digits=3,legend.pos="bottomleft",legend.cex=1,
+#'legend.bty='n',legend.col=1,legend.inset=0,legend.bg="transparent",add.to.map=F,
+#'plot.axes=T,plot.border=grDevices::grey(0.9),na.color=grDevices::grey(0.96),
+#'na.label="NA",output.breaks=F)
 #'
 #' @param shape An existing spatial polygon or spatial polygon data-frame
 #' @param column A string name of a column in the data-frame of shape argument,
@@ -37,6 +37,7 @@
 #' (default = \code{"black"})
 #' @param legend.inset Numeric value specifying the inset of the legend
 #' (default = \code{0})
+#' @param legend.bg Color for legend background (default=\code{"transparent"})
 #' @param add.to.map Logical to start a new map frame if \code{FALSE} or overlay
 #'  onto an existing map frame if \code{TRUE}
 #' @param plot.axes Logical to plot axes (default=\code{TRUE})
@@ -63,10 +64,10 @@
 #'
 mapColorRamp <- function(shape, column,
                          breaks=8, break.style="quantile",
-                         map.title="Sequential Choropleth Map",
+                         map.title="Sequential Choropleth",
                          palette="Oranges",
-                         colorblind=FALSE,
-                         reverse=FALSE,
+                         colorblind=F,
+                         reverse=F,
                          legend.title=column,
                          legend.digits=3,
                          legend.pos="bottomleft",
@@ -74,12 +75,13 @@ mapColorRamp <- function(shape, column,
                          legend.bty='n',
                          legend.col=1,
                          legend.inset=0,
-                         add.to.map=FALSE,
-                         plot.axes=TRUE,
+                         legend.bg="transparent",
+                         add.to.map=F,
+                         plot.axes=T,
                          plot.border=grDevices::grey(0.9),
                          na.color=grDevices::grey(0.96),
                          na.label="NA",
-                         output.breaks=FALSE){
+                         output.breaks=F){
   stopifnot(
     "shape must be a SpatialPolygonsDataFrame" =
       methods::is(shape, "SpatialPolygonsDataFrame")
@@ -114,15 +116,16 @@ mapColorRamp <- function(shape, column,
   # -- map panel --
   sp::plot(shape, col=map.col
            , border=plot.border
-           , axes=plot.axes,
-           add=add.to.map)
+           , axes=plot.axes
+           , add=add.to.map)
   graphics::legend(legend.pos, title=legend.title
                    ,legend=legend.labs
                    , fill=pal
                    , bty=legend.bty
                    , ncol=legend.col
                    , cex=legend.cex
-                   , inset = legend.inset)
+                   , inset = legend.inset
+                   , bg=legend.bg)
   graphics::title(map.title)
   graphics::box()
 
