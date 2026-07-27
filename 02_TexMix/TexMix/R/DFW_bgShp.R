@@ -72,6 +72,13 @@
 #'   \item{PCTB1950}{Numeric. Percentage of population born in 1950s.}
 #'   \item{PCTB1940}{Numeric. Percentage of population born in 1940s.}
 #'   \item{PCTBPRE}{Numeric. Percentage of population born before 1940.}
+#'   \item{SchoolDistrict}{Character. Name of the school district serving the
+#'     census tract. May include multiple districts if tract spans boundaries.}
+#'   \item{Municipality}{Character. Name of the city or town, or "Unincorporated"
+#'     for areas outside municipal boundaries.}
+#'   \item{CongLevel}{Factor. Mobility 2050 Estimated Congestion Level.}
+#'   \item{COUNTY}{County containing the census tract.}
+#'   \item{TRACT}{Census Tract containing the block group}
 #' }
 #'
 #' @details
@@ -144,4 +151,4 @@
 #' }
 #'
 #' @keywords datasets spatial demographics DFW blockgroup
-"DFW_bgShp"
+NULL

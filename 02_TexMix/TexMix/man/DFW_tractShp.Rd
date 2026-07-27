@@ -9,7 +9,7 @@ A SpatialPolygonsDataFrame with census tract observations and
 
 \describe{
   \item{GEOID}{Character. Geographic identifier (Census tract FIPS code).}
-  \item{NAME}{Character. Census tract name/description.}
+  \item{NAME}{Character. Census tract name}
 
   \strong{Area and Population Density}
   \item{LANDAREA}{Numeric. Land area in square miles.}
@@ -77,7 +77,8 @@ A SpatialPolygonsDataFrame with census tract observations and
     census tract. May include multiple districts if tract spans boundaries.}
   \item{Municipality}{Character. Name of the city or town, or "Unincorporated"
     for areas outside municipal boundaries.}
-  \item{CongLevel}{Integer. U.S. Congressional district number.}
+  \item{CongLevel}{Factor. Mobility 2050 Estimated Congestion Level.}
+  \item{COUNTY}{County containing the census tract.}
 }
 }
 \source{
@@ -127,9 +128,6 @@ transit_dependent <- DFW_tractShp@data[
 
 # Count tracts by school district
 table(DFW_tractShp@data$SchoolDistrict)
-
-# Map median home values by congressional district
-boxplot(MEDVALHOME ~ CongLevel, data = DFW_tractShp@data)
 }
 
 }

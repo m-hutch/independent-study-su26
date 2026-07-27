@@ -24,7 +24,7 @@ migration flows among the 95 provinces of Italy (1994). Three datasets from the
 `TexMix` package are used:
 
 - `ItalyShp`: spatial polygons and socioeconomic attributes for Italian provinces
-- `Italy_neighborsShp`: background polygons for neighboring countries and territories
+- `Italy_neighShp`: background polygons for neighboring countries and territories
 - `Italy_migration`: a 95 × 95 origin-destination matrix of inter-provincial
   migrant counts
 
@@ -51,7 +51,7 @@ great-circle distances between provincial centroids.
 
 ```{r data}
 data(ItalyShp)
-data(Italy_neighborsShp)
+data(Italy_neighShp)
 data(Italy_migration)
 
 bBox     <- sp::bbox(ItalyShp)
@@ -70,7 +70,7 @@ Italy's 95 provinces are grouped into three macro-regions (North, Central, and
 South) which serve as fixed effects in the doubly-constrained model below.
 
 ```{r map-regions}
-sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+sp::plot(Italy_neighShp, axes = TRUE, col = grey(0.9), border = "white",
          xlim = bBox[1, ], ylim = bBox[2, ])
 mapColorQual(as.factor(ItalyShp$REGION), ItalyShp,
              map.title    = "Regions of Italy",
@@ -84,7 +84,7 @@ Total fertility rate varies substantially across the peninsula, with notably
 lower rates in the North and Central regions.
 
 ```{r map-fertility}
-sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+sp::plot(Italy_neighShp, axes = TRUE, col = grey(0.9), border = "white",
          xlim = bBox[1, ], ylim = bBox[2, ])
 #mapColorRamp(ItalyShp$TOTFERTRAT, ItalyShp, breaks = 7,
 #             map.title    = "Italy Fertility Rate",
@@ -109,7 +109,7 @@ cat("Net gainers (ratio > 0):", sum(ItalyShp$logMigRatio >  0), "\n")
 ```
 
 ```{r map-bipolar}
-sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+sp::plot(Italy_neighShp, axes = TRUE, col = grey(0.9), border = "white",
          xlim = bBox[1, ], ylim = bBox[2, ])
 mapBiPolar(ItalyShp$logMigRatio, ItalyShp,
            neg.breaks   = 3, pos.breaks = 5, break.value = 0,
@@ -141,7 +141,7 @@ bigmig        <- mij > quantile(as.vector(mij), prob = 0.99, na.rm = TRUE)
 diag(bigmig)  <- FALSE
 prov.link     <- spdep::mat2listw(bigmig, style = "B", zero.policy = TRUE)$neighbours
 
-sp::plot(Italy_neighborsShp, axes = TRUE, col = grey(0.9), border = "white",
+sp::plot(Italy_neighShp, axes = TRUE, col = grey(0.9), border = "white",
          xlim = bBox[1, ], ylim = bBox[2, ])
 sp::plot(ItalyShp, col = "palegreen3", border = grey(0.9), add = TRUE)
 plot(prov.link, coords = centroid, pch = 19, cex = 0.1,

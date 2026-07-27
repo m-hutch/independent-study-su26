@@ -2,7 +2,7 @@
 #'
 #' A spatial line data frame containing the highway and major road network
 #' for Texas, with functional classification.
-#' @name TX_hwy
+#' @name TX_hwyShp
 #' @format A SpatialLinesDataFrame with highway/road segments and 1 variable:
 #'
 #' \describe{
@@ -50,15 +50,6 @@
 #'   \item \strong{unclassified} – Roads not assigned to a specific category
 #' }
 #'
-#' @note
-#' This is a line network dataset. For network analysis (routing, shortest paths),
-#' users may need to:
-#' \itemize{
-#'   \item Ensure line segments are properly connected at nodes
-#'   \item Handle one-way vs. two-way traffic direction (if available)
-#'   \item Use specialized network analysis packages (e.g., \code{igraph},
-#'     \code{stplanr}, or \code{osmnx} for Python users)
-#' }
 #'
 #' The dataset may not include all local roads, especially in rural areas,
 #' depending on the source. For comprehensive local routing, consider supplementing
@@ -72,24 +63,24 @@
 #' library(sp)
 #'
 #' # Plot all highways
-#' plot(TX_hwy)
+#' plot(TX_hwyShp)
 #'
 #' # Plot only interstates and U.S. highways
 #' major_hwy <- TX_hwy[TX_hwy@data$fclass %in% c("motorway", "trunk"), ]
 #' plot(major_hwy, col = "red", lwd = 2)
 #'
 #' # Count road segments by functional class
-#' table(TX_hwy@data$fclass)
+#' table(TX_hwyShp@data$fclass)
 #'
 #' # Find roads near a location (example: buffer analysis)
 #' library(rgeos)
-#' highway_access <- gBuffer(TX_hwy, width = 1)  # 1-unit buffer
+#' highway_access <- gBuffer(TX_hwyShp, width = 1)  # 1-unit buffer
 #' plot(highway_access)
 #'
 #' # Subset to interstates only
-#' interstates <- TX_hwy[TX_hwy@data$fclass == "motorway", ]
+#' interstates <- TX_hwyShp[TX_hwyShp@data$fclass == "motorway", ]
 #' length(interstates)  # Number of interstate segments
 #' }
 #'
-#' @keywords datasets spatial transportation network highway
-"TX_hwy"
+#' @keywords datasets spatial transportation highway
+NULL
