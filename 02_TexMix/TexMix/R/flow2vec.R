@@ -53,15 +53,16 @@
 #'
 #' @export
 #' @examples
-#' data(tractShp)
-#' validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]
-#' # Use a small subset for illustration
-#' smallDf <- as.data.frame(validTractShp)[1:5, c("PERCAPINC", "PCTMINOR", "CITYPERI")]
-#' od <- flow2vec(smallDf)
-#' head(od)
+#' data("ItalyShp")
+#' data("Italy_migration")
 #'
-#' # With log transformation
-#' od_log <- flow2vec(smallDf[, c("PERCAPINC", "PCTMINOR")], logTrans=TRUE)
+#' smallDf <- as.data.frame(ItalyShp)[c("TOTPOP94", "TOTFERTRAT")]
+#' mij <- as.matrix(Italy_migration[,2:96])
+#' od <- flow2vec(smallDf, mij=mij)
+#' head(od)
+#' #'
+#' #' # With log transformation
+#' od_log <- flow2vec(smallDf, logTrans=TRUE)
 #' head(od_log)
 flow2vec <- function(df, mij=NULL, dij=NULL, logTrans=FALSE, zTrans=FALSE){
   ##############################################################################
