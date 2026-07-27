@@ -1,0 +1,274 @@
+---
+title: "TexMix"
+subtitle: "An R Package for Teaching Demographic, Migration, and Spatial Data Analysis"
+author: "Mae Hutchison"
+date: last-modified
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    incremental: false
+    toc: false
+    code-fold: false
+execute:
+  echo: true
+  output: true
+---
+
+## Agenda
+
+I. Introduction  
+II. Literature Review  
+III. Study Area and Data Sources  
+IV. Analysis / Methodology  
+V. Results and Discussion  
+VI. Conclusions and Future Study  
+VII. References / Bibliography  
+
+# I. Introduction {background-color="#1b3a5c"}
+
+## What is TexMix?
+
+- An `R` package built to support **teaching spatial demographic analysis** at UT Dallas
+- Bundles curated Census/ACS data, spatial data frames, and purpose-built functions
+- Designed for teaching and student's own applied research 
+- Goal: provide a comprehensive package for teaching courses that use `R`, with easily interpretable code that students can use as a reference when writing their own scripts
+
+## Why TexMix?
+
+- Off-the-shelf Census workflows require repetitive boilerplate: pulling ACS variables, joining geometries, managing GEOIDs
+- Migration and flow data are especially painful to reshape for mapping and vector-based analysis
+- TexMix pre-packages the data and functions our students and collaborators use most often
+- This release focuses on **new data coverage**, **new analytical functions**, and **performance / packaging improvements**
+
+## Release Highlights
+
+::: {.incremental}
+- New 2024 ACS data for NCTCOG tracts and blockgroups, plus new factor variables and new 2024 ACS data for all Texas counties
+- Expanded highway and water spatial layers and added a new Texas neighbors `sdf` for basemaps
+- New Italy migration dataset and basemap files
+- Three new functions: `flow2vec`, `ageStructure`, `viewPaletteSpread`; updated `mapColorRamp`
+- Vectorized performance improvements, universal GEOID keys, and a new testing framework
+:::
+
+# II. Literature Review {background-color="#1b3a5c"}
+
+## Foundations in Spatial Demography
+
+- Long tradition of using Census geography (tracts, block groups, counties) as the building blocks of demographic analysis
+- R's spatial ecosystem has matured into the de facto standard for reproducible Census workflows
+- Migration and commuting flow analysis has its own lineage: origin-destination matrices, desire-line mapping, and flow vectorization techniques used in transportation and migration research
+
+## Positioning TexMix
+
+- TexMix builds on, rather than replaces, the `sp` / `sf` ecosystem
+- Distinguishing contributions:
+  - Pre-joined, analysis-ready ACS extracts for a defined study region (NCTCOG) and for Texas statewide
+  - Purpose-built helpers for **flow data** (`flow2vec`) and **age-structure diagrams** (`ageStructure`) that are otherwise assembled ad hoc
+  - Cartographic helper functions (`mapColorRamp`, `viewPaletteSpread`) aimed at consistent, accessible thematic mapping
+- Related work: regional council data portals (NCTCOG), Census Bureau flow reports, and prior TexMix releases that established the base package structure
+
+## Gaps TexMix Addresses
+
+- Regional (NCTCOG) data is published separately from US Census and statewide Texas data -- TexMix unifies both under a common GEOID schema
+- Flow/OD data preparation for vector-based mapping is typically hand-coded per project -- `flow2vec` generalizes this step
+- Color palette selection for choropleth maps is rarely tested for perceptual spread -- `viewPaletteSpread` gives users a diagnostic tool
+- Department-specific teaching tool -- fully customized to fit UTD's spatial analysis courses
+
+# III. Study Area and Data Sources {background-color="#1b3a5c"}
+
+## Study Area
+
+- **Primary region:** Dallas County, with buffer data for all North Central Texas Council of Governments (NCTCOG) counties
+  - Tract- and blockgroup-level detail
+- **Secondary region:** All 254 Texas counties (statewide generalization)
+- **For migration vignette** Italy migration data, included for cross-national migration comparison exercises
+```{r}
+library(TexMix)
+```
+
+
+## DFW Region -- Census Tracts
+```{r sa1}
+data("DFW_tractShp")
+plot(DFW_tractShp)
+```
+
+## DFW Region --  Block Groups
+```{r}
+data("DFW_bgShp")
+plot(DFW_bgShp)
+```
+
+## Texas Counties
+```{r}
+data("TX_countyShp")
+plot(TX_countyShp)
+```
+
+## Italy provinces
+```{r}
+data("ItalyShp")
+plot(ItalyShp)
+```
+
+
+## New Data -- NCTCOG Tracts and Blockgroups
+
+- 2024 ACS data for census tracts and blockgroups within NCTCOG counties
+- New factor variables added to support classification and grouping:
+  - **School district**
+  - **Municipality**
+  - **Congestion level**
+- These factors enable direct filtering, faceting, and choropleth mapping without additional joins
+
+## Census data
+```{r}
+colnames(DFW_tractShp@data)
+```
+## New Factor Data Example
+```{r}
+mapColorQual(DFW_tractShp@data$CongLevel, DFW_tractShp)
+```
+
+
+## New Data -- Statewide and Spatial Layers
+
+- 2024 ACS data extended to **all Texas counties**, enabling state-level context alongside the NCTCOG focus
+- **Expanded highway and water layers** for richer basemap cartography and spatial reference
+- **Texas neighbors sdf**: a spatial data frame of bordering states, for cleaner basemaps on any Texas-extent map
+- **Italy migration data and basemap files**: adds an international migration dataset for comparative coursework and research
+
+## Example -- Texas neighbors
+```{r}
+data("TX_neighShp")
+extent <- bbox(TX_countyShp)
+plot(TX_neighShp, xlim=extent[1,], ylim=extent[2,])
+mapColorRamp(TX_countyShp, "POPDEN", add.to.map = T, legend.pos="bottomright")
+```
+
+
+## Data Design Principle: Universal GEOID
+
+- Every new dataset in this release includes a **GEOID** field
+- Rationale:
+  - Consistent join key across tracts, blockgroups, and counties
+  - Simplifies adding future variables without re-engineering joins
+  - Enables long-term maintainability as ACS vintages update annually
+
+# IV. Analysis / Methodology {background-color="#1b3a5c"}
+
+## New Function: `flow2vec`
+
+- Converts origin-destination / migration flow tables into vector-ready formats for mapping and analysis
+- Formerly implemented as `prepIJDf`in an in-class script; renamed and substantially rebuilt
+- **Performance improvement:** parallel calculations across columns are now vectorized, rather than looped, reducing processing time on large flow tables
+
+## Example: flow2vec
+```{r}
+data("ItalyShp")
+data("Italy_migration")
+
+df <- ItalyShp@data[,c("TOTPOP94","TOTFERTRAT")]
+mij <- as.matrix(Italy_migration[,2:96])
+vec.migration <- flow2vec(df, mij=mij)
+head(vec.migration)
+```
+
+
+## New Function: `ageStructure`
+
+- Generates standardized age-structure diagram (population pyramid) from ACS age variables
+- Reduces repetitive recoding of age bins across projects
+- Designed to work directly with the new NCTCOG and statewide ACS extracts
+
+## Exampe: ageStructure
+
+```{r}
+ageStructure(TX_countyShp, name="Texas")
+```
+
+
+## New Function: `viewPaletteSpread`
+
+- Diagnostic tool for evaluating color palettes before mapping
+- Helps users visually check perceptual spacing/contrast of a palette across classes
+- Complements the updated `mapColorRamp` function by letting users see how observations are distributed within the palette
+
+## Example: viewPaletteSpread
+```{r include=FALSE}
+ramp <- mapColorRamp(DFW_tractShp, 'POPDEN', breaks=5, output.breaks=TRUE)
+```
+```{r}
+viewPaletteSpread(ramp)
+```
+
+
+## Updated Function: `mapColorRamp`
+
+- Refined to provide more palette options and user-control over the plot
+```{r}
+mapColorRamp(ItalyShp, 'TOTPOP94', breaks=5, palette = "Blues")
+```
+
+
+## Methodological / Technical Updates
+
+- **Vectorization:** `flow2vec` parallelizes calculations across columns instead of row-wise iteration, improving performance on large datasets
+- **GEOID standardization:** all new datasets carry GEOID for easy joins and future variable additions
+- **Testing framework:** new functions (`flow2vec`, `ageStructure`, `viewPaletteSpread`) are now covered by automated tests, supporting long-term reliability and CRAN submission readiness
+
+# V. Results and Discussion {background-color="#1b3a5c"}
+
+## What This Release Enables
+
+- Analysts can now move between **regional (NCTCOG)** and **statewide (Texas)** scales using the same GEOID-based join logic
+- Migration/commuting flow work is faster and less error-prone with `flow2vec`'s vectorized approach
+- Age-structure analysis and thematic color mapping are now first-class, tested functions rather than ad hoc scripts
+- The new Texas neighbors sdf and expanded highway/water layers improve basemap quality for any Texas-focused map
+
+
+## Known Considerations
+
+- New factor variables (school district, municipality, congestion level) can shift year to year
+- Test coverage should be expanded to include existing functions, not just the three new functions
+- old data needs to be phased out of the package
+
+# VI. Conclusions and Future Study {background-color="#1b3a5c"}
+
+## Conclusions
+
+- This release meaningfully expands TexMix's data footprint (NCTCOG + statewide Texas + Italy) and analytical toolkit (`flow2vec`, `ageStructure`, `viewPaletteSpread`)
+- Technical investments -- vectorization, universal GEOID, and a testing framework -- position the package for more sustainable, reliable growth
+- TexMix is closer to being a robust, general-purpose teaching and research tool for Texas spatial demography
+
+## Next Steps
+
+::: {.incremental}
+- **Submit final package to CRAN**
+- **Set up an official GitHub repository**
+- **Build compiled tarballs for all supported systems**
+- **Gather feedback from students** using the package in coursework
+:::
+
+## Future Study
+
+- Expand the testing framework to cover all exported functions, including updated ones
+- Annual ACS refresh workflow, leveraging the new GEOID standardization
+- Long term: will need to migrate to `sf` package once `sp` is decomissioned
+
+# VII. References / Bibliography {background-color="#1b3a5c"}
+
+## References
+
+- U.S. Census Bureau. *American Community Survey (ACS) 2024, 5-Year Estimates.*
+- North Central Texas Council of Governments (NCTCOG). *Regional Data and GIS Resources.*
+- Pebesma, E. (2018). *Simple Features for R: Standardized Support for Spatial Vector Data.* The R Journal.
+- Walker, K. (2023). *Analyzing US Census Data: Methods, Maps, and Models in R.*
+- TexMix package documentation and prior release notes (internal).
+
+## Thank You
+
+- Questions and feedback welcome
+- Package repository, documentation, and CRAN listing forthcoming per the next-steps roadmap
