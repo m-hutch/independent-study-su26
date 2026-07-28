@@ -56,3 +56,12 @@ DFW_bgShp@data<-new.data2
 save(DFW_bgShp, file=paste0(final_data,"DFW_bgShp.Rdata"))
 
 
+
+non.num <- c("GEOID", "NAME", "SchoolDistrict", "Municipality", "CongLevel", "COUNTY")
+
+for (col in names(DFW_tractShp@data)) {
+  if (!col %in% non.num) {
+    DFW_tractShp@data[, col] <- as.numeric(as.character(DFW_tractShp@data[, col]))
+  }
+}
+save(DFW_tractShp, file="/Users/maehutch/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/DFW_tractShp.RData")
