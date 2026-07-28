@@ -91,7 +91,7 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
                          main = "Age Structure Diagram",
                          name = NA) {
   stopifnot("bin.width must be numeric" = is.numeric(bin.width))
-  if(is(sdf, "Spatial")){
+  if(methods::is(sdf, "Spatial")){
     # Extract the data frame from the spatial object
     df <- sdf@data
     stopifnot("sdf@data must be a data frame"=is.data.frame(df))
@@ -246,7 +246,7 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
   # Create the pyramid
   max_val <- max(c(male_totals, female_totals))
 
-  par.setting<-par(no.readonly = TRUE) # save par state
+  par.setting<-graphics::par(no.readonly = TRUE) # save par state
   graphics::par(mar = c(5, 9, 4, 9))
   plot(NULL,
        xlim = c(-max_val, max_val),
