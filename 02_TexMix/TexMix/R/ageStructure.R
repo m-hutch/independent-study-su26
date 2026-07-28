@@ -90,6 +90,21 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
                          age_regex = "(\\d+)(?:_TO_(\\d+)|_(PLUS))?$",
                          main = "Age Structure Diagram",
                          name = NA) {
+  stopifnot("bin.width must be numeric" = is.numeric(bin.width))
+  if(is(sdf, "Spatial")){
+    # Extract the data frame from the spatial object
+    df <- sdf@data
+    stopifnot("sdf@data must be a data frame"=is.data.frame(df))
+    stopifnot("sdf@data must have at least one row"=length(df)>0)
+  }else{
+    df<-sdf # allow only data frame to be passed
+    stopifnot("sdf or sdf@data must be a data frame"=is.data.frame(df))
+    stopifnot("sdf or sdf@data must have at least one row"=length(df)>0)
+  }
+
+
+  mcol <- grDevices::rgb(0.2, 0.4, 0.8, 0.7) # male bar color
+  fcol <- grDevices::rgb(0.8, 0.4, 0.6, 0.7) # female bar color
 
   ## ---- helper: parse start (inclusive) / end (exclusive) age from a column name ----
   parseAgeRange <- function(colname, regex) {
@@ -101,11 +116,11 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
     to_val   <- if (length(m) >= 3) m[3] else ""
     plus_val <- if (length(m) >= 4) m[4] else ""
     if (nzchar(to_val)) {
-      end <- as.numeric(to_val)               # "_TO_N" already means exclusive upper bound N
+      end <- as.numeric(to_val)    # "_TO_N" already means exclusive upper bound N
     } else if (nzchar(plus_val)) {
-      end <- Inf                              # open-ended "PLUS" bucket
+      end <- Inf                   # open-ended "PLUS" bucket
     } else {
-      end <- start + 1                        # single-age bucket, e.g. "100"
+      end <- start + 1             # single-age bucket, e.g. "100"
     }
     c(start = start, end = end)
   }
@@ -164,7 +179,7 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
 
   if (is.na(name)) {
     if (is.na(name)) {
-      if (nrow(df <- sdf@data) == 1) {
+      if (nrow(df) == 1) {
         # single observation: look for a "Name" column and use its value
         name_col <- grep("^name$", names(df), ignore.case = TRUE, value = TRUE)
         if (length(name_col) > 0) {
@@ -179,8 +194,7 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
     }
   }
 
-  # Extract the data frame from the spatial object
-  df <- sdf@data
+
 
   # Get column names matching the age regex
   age_cols <- grep(age_regex, names(df), value = TRUE)
@@ -232,6 +246,7 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
   # Create the pyramid
   max_val <- max(c(male_totals, female_totals))
 
+  par.setting<-par(no.readonly = TRUE) # save par state
   graphics::par(mar = c(5, 9, 4, 9))
   plot(NULL,
        xlim = c(-max_val, max_val),
@@ -255,20 +270,20 @@ ageStructure <- function(sdf, bin.width = 5, sex_prefixes = c("MALE_", "FEMALE_"
 
   for (i in seq_along(male_totals)) {
     graphics::rect(xleft = -male_totals[i], xright = 0, ybottom = i - 1, ytop = i,
-         col = grDevices::rgb(0.2, 0.4, 0.8, 0.7), border = NA)
+         col = mcol, border = NA)
   }
   for (i in seq_along(female_totals)) {
     graphics::rect(xleft = 0, xright = female_totals[i], ybottom = i - 1, ytop = i,
-         col = grDevices::rgb(0.8, 0.4, 0.6, 0.7), border = NA)
+         col = fcol, border = NA)
   }
 
   graphics::abline(v = 0, lwd = 2)
   graphics::legend("topleft",
          legend = c("Male", "Female"),
-         fill = c(grDevices::rgb(0.2, 0.4, 0.8, 0.7), grDevices::rgb(0.8, 0.4, 0.6, 0.7)),
+         fill = c(mcol, fcol),
          bty = "n")
 
-  graphics::par(mar = c(5, 4, 4, 2) + 0.1)
+  graphics::par(par.setting, no.readonly = TRUE)
 
   invisible(list(
     male = male_totals, female = female_totals,
