@@ -23,10 +23,10 @@
 #' @return \code{NULL}
 #' @author Michael Tiefelsdorf <tiefelsdorf@@utdallas.edu>
 #' @examples
-#' validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]         # Remove 2 tracts with NA's
-#' mapColorQual(validTractShp$CITYPERI, validTractShp,
-#'              map.title="Cities and Peripherie in Dallas County",
-#'              legend.title="Regions")
+#' validTractShp <- DFW_tractShp[DFW_tractShp$COUNTY=="Dallas County",]
+#' mapColorQual(validTractShp$CongLevel, validTractShp,
+#'              map.title="Congestion in Dallas County",
+#'              legend.title="Congestion")
 
 mapColorQual <- function(var.name, shape,
                          map.title="", legend.title=deparse(substitute(var.name)),

@@ -25,31 +25,27 @@ likelihood ratio test is performed against a model, which assumes homoscedastici
 }
 \examples{
 library(sp)
-data(tractShp)
-validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]         # Remove 2 tracts with NA's
-## Population at risk
+data(DFW_tractShp)
+tractShp <- DFW_tractShp[DFW_tractShp$COUNTY=="Dallas County",]
+validTractShp <- na.omit(tractShp)
+validTractShp <- validTractShp[validTractShp$MALE+validTractShp$FEMALE>0,]
+# ##Population at risk
 totPop <- validTractShp$MALE+validTractShp$FEMALE
 
 ## H0 model
-mod.lm <- mod.lmH <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE,
+mod.lm <- mod.lmH <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG,
                               data=validTractShp)
 summary(mod.lm)
 
 ## Preferred function call
-mod.lmH <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE|log(totPop),
+mod.lmH <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG|log(totPop),
                     data=validTractShp)
 summary(mod.lmH)
 
 ## Alternative function call
-mod.lmH <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE, hetero=~log(totPop),
+mod.lmH <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG, hetero=~log(totPop),
                     data=validTractShp)
 summary(mod.lmH)
-
-## Use estimated weights as input for weighted lm
-mod.lmW <- lm(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE, weights=mod.lmH$weights,
-              data=validTractShp)
-summary(mod.lmW)
-hist(weighted.residuals(mod.lmW))
 
 }
 \author{

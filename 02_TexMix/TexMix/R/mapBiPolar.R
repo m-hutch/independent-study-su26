@@ -29,12 +29,13 @@
 #' @return \code{NULL}
 #' @author Michael Tiefelsdorf <tiefelsdorf@@utdallas.edu>
 #' @examples
-#' validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]         # Remove 2 tracts with NA's
-#' hist(tractShp$LRRmedD)
-#' mapBiPolar(validTractShp$LRRmedD, validTractShp, break.value=0,
+#' tractShp <- DFW_tractShp[DFW_tractShp$COUNTY=='Dallas County',]
+#' validTractShp <- tractShp[!is.na(tractShp$NIGHTPOP), ]
+#' hist(tractShp$POPDEN)
+#' mapBiPolar(validTractShp$PCTMINOR, validTractShp, break.value=0.5,
 #'            neg.breaks=5, pos.breaks=5,
-#'            map.title="LRR: log(f(junk food),f(healthy food))\nbw=medium",
-#'            legend.title="log relative risk")
+#'            map.title="Percent Minority",
+#'            legend.title="Percent Minority")
 #'
 mapBiPolar <- function(var.name,shape,
                        break.value=0,neg.breaks=4,pos.breaks=neg.breaks,

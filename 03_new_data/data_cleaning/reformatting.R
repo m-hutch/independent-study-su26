@@ -65,3 +65,27 @@ for (col in names(DFW_tractShp@data)) {
   }
 }
 save(DFW_tractShp, file="/Users/maehutch/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/DFW_tractShp.RData")
+
+
+library(tidycensus)
+library(dplyr)
+
+
+# Get the PERCAPINC for census tracts in Texas
+texas_per_cap_income <- get_acs(
+  geography = "tract",
+  state = "TX",
+  variables = "B19301_001",
+  year = 2024,
+  survey = "acs5",
+  output = "wide"
+)
+
+# View the data
+glimpse(texas_per_cap_income)
+
+add.var<- texas_per_cap_income%>%
+  mutate(PERCAPINC=B19301_001E)  %>% select(GEOID, PERCAPINC)
+
+DFW_tractShp@data <- DFW_tractShp@data %>% left_join(add.var, by='GEOID')
+data("DFW_tractShp")

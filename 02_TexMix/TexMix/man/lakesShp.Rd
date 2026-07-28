@@ -10,13 +10,13 @@ Polygon layer in the longitude and latitude format (see
 }
 \examples{
 library(sp)
-validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]  # Remove 2 tracts with NA's
+tractShp <- DFW_tractShp[DFW_tractShp$COUNTY=="Dallas County",]
+validTractShp <- tractShp[!is.na(tractShp$NIGHTPOP), ]
 plot(tractShp, col="white", border="white", axes=TRUE,
-     main="Dallas Census Tracts with Food Deserts")
+     main="Dallas Census Tracts with residents")
 plot(validTractShp, col="ivory2", border="white", add=TRUE)
 plot(lakesShp, col="skyblue", border="skyblue",add=TRUE)
 plot(hwyShp, col="cornsilk3", lwd=3, add=TRUE)
-plot(foodDesertShp, border="magenta",lwd=2, add=TRUE)
 plot(bndShp, border="black", add=TRUE)
 box()
 

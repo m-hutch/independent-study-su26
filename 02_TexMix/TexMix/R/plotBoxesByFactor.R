@@ -24,8 +24,8 @@
 #' @author Michael Tiefelsdorf <tiefelsdorf@@utdallas.edu>
 #' @examples
 #' varsKeep <- c("PCTWHITE","PCTBLACK","PCTASIAN","PCTHISPAN","MEDAGE","MEDVALHOME")
-#' myData <- tractShp@data
-#' plotBoxesByFactor(myData[,varsKeep], tractShp$CITYPERI, ncol=2, zTrans=TRUE, varwidth=FALSE)
+#' myData <- DFW_tractShp@data
+#' plotBoxesByFactor(myData[,varsKeep], DFW_tractShp$CongLevel, ncol=2, zTrans=TRUE, varwidth=FALSE)
 
 plotBoxesByFactor <- function(xVars, groups, ncol=3, zTrans=TRUE, varwidth=FALSE){
   xVars <- xVars[ , sapply(xVars, is.numeric)] # only metric variables

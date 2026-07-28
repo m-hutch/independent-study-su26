@@ -78,7 +78,8 @@ Set the spatial tessellation of the census tracts up and prepare the contiguity
 space dissimilarity among the census tracts.
 
 ```{r Adjacency, echo=TRUE, fig.height=7.2}
-data(tractShp)
+data("DFW_tractShp")
+tractShp <- DFW_tractShp[DFW_tractShp$COUNTY=="Dallas County",]
 tractShp <- tractShp[tractShp$NIGHTPOP!=0, ]         # Remove 2 airport tracts with NA's
 
 ##
@@ -130,7 +131,7 @@ tractShp$POST2000 <- tractShp$PCTB2000+tractShp$PCTB2010
 ## Feature list
 varKeep <- c("PCTWHITE","PCTBLACK","PCTHISPAN","MEDAGE",
              "PCTUNIVDEG","HHMEDINC","PCTUNEMP","PCTNOHINS",
-             "POPDEN","PCTDAYPOP","PCTHUVAC","MEDVALHOME","PRE1960","POST2000")
+             "POPDEN","PCTHUVAC","MEDVALHOME","PRE1960","POST2000")
 xVars <- tractShp@data
 xVars <- xVars[varKeep]
 summary(xVars)
@@ -237,7 +238,7 @@ are split into two panels.
 ## Evaluate cluster characteristics
 ##
 plotBoxesByFactor(xVars[,1:7], neighClus, ncol=2, zTrans=T, varwidth=F)
-plotBoxesByFactor(xVars[,8:14], neighClus, ncol=2, zTrans=T, varwidth=F)
+plotBoxesByFactor(xVars[,8:13], neighClus, ncol=2, zTrans=T, varwidth=F)
 ```
 
 ## Show heatmap of clusters by features

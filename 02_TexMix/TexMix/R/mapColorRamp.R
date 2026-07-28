@@ -52,9 +52,9 @@
 #' @author Michael Tiefelsdorf <tiefelsdorf@@utdallas.edu>
 #' @author Mae Hutchison <mah230002@@utdallas.edu>
 #' @examples
-#' ramp <- mapColorRamp(tractShp, 'bad1500D', breaks=9,
-#'              map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
-#'              legend.title="Junk Food", output.breaks=TRUE)
+#' ramp <- mapColorRamp(DFW_tractShp, 'PCTMINOR', breaks=9,
+#'              map.title="Percent Minority",
+#'              legend.title="Percent", output.breaks=TRUE)
 #'
 #'# plot distribution of breaks
 #'viewPaletteSpread(ramp)

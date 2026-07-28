@@ -37,10 +37,10 @@ The function \code{mapColorQual} maps a \emph{categorical variable} with a
   valid factor levels should not exceed 12. NA's are permitted.
 }
 \examples{
-validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]         # Remove 2 tracts with NA's
-mapColorQual(validTractShp$CITYPERI, validTractShp,
-             map.title="Cities and Peripherie in Dallas County",
-             legend.title="Regions")
+validTractShp <- DFW_tractShp[DFW_tractShp$COUNTY=="Dallas County",]
+mapColorQual(validTractShp$CongLevel, validTractShp,
+             map.title="Congestion in Dallas County",
+             legend.title="Congestion")
 }
 \author{
 Michael Tiefelsdorf <tiefelsdorf@utdallas.edu>

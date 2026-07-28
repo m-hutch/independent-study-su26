@@ -83,30 +83,31 @@ The weights variables z must be entered in their logarithmic forms. The
 paramater \eqn{\exp(\gamma_0)} expresses the global variance.
 }
 \examples{
-library(sp)
-data(tractShp)
-validTractShp <- tractShp[!is.na(tractShp$BUYPOW), ]         # Remove 2 tracts with NA's
-## Population at risk
+data(DFW_tractShp)
+tractShp <- DFW_tractShp[DFW_tractShp$COUNTY=="Dallas County",]
+validTractShp <- na.omit(tractShp)
+validTractShp <- validTractShp[validTractShp$MALE+validTractShp$FEMALE>0,]
+# ##Population at risk
 totPop <- validTractShp$MALE+validTractShp$FEMALE
 
 ## H0 model (homoscedasticity)
-mod.H0 <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE,
+mod.H0 <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTASIAN,
                               data=validTractShp)
 summary(mod.H0)
 
 ## Preferred heteroscedasticiy function call
-mod.H1 <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE | log(totPop),
-                     data=validTractShp)
+mod.H1 <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTASIAN | log(totPop),
+                  data=validTractShp)
 summary(mod.H1)
 
 ## Alternative equivalent heteroscedasticiy function call
-mod.H1 <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE, hetero=~log(totPop),
+mod.H1 <- lmHetero(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTASIAN, hetero=~log(totPop),
                      data=validTractShp)
 summary(mod.H1)
 
 ## Use estimated weights as input for weighted lm-model.
 ## This also to perform further model diagnostics.
-mod.wlm <- lm(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTWHITE, weights=mod.H1$weights,
+mod.wlm <- lm(PERCAPINC~PCTNOHINS+PCTMINOR+PCTUNIVDEG+PCTASIAN, weights=c(1,mod.H1$weights),
               data=validTractShp)
 summary(mod.wlm)
 hist(weighted.residuals(mod.wlm))

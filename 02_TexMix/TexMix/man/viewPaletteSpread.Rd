@@ -43,9 +43,9 @@ The function \code{viewPaletteSpread} maps an \emph{interval scaled
 variable} by a \emph{sequetial color ramp}.
 }
 \examples{
-ramp <- mapColorRamp(tractShp, 'bad1500D', breaks=9,
-             map.title="Density of Convenience Stores in Dallas County\nbw=1500 meters",
-             legend.title="Junk Food", output.breaks=TRUE)
+ramp <- mapColorRamp(DFW_tractShp, 'PERCAPINC', breaks=9,
+             map.title="Per Capita Income",
+             legend.title="Income", output.breaks=TRUE)
 
 viewPaletteSpread(ramp)
 
