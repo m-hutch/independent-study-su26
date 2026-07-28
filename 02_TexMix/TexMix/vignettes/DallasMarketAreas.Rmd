@@ -220,8 +220,8 @@ found in several locations of Dallas County.
 mapColorQual(neighClus, tractShp, 
              map.title ="Spatially constrained Cluster Analysis",
              legend.title="Cluster\nId.", legend.cex=0.9)
-plot(lakesShp, col="skyblue", border="skyblue",add=T)
-plot(hwyShp, col="cornsilk2", lwd=4, add=T)
+plot(Dallas_lakesShp, col="skyblue", border="skyblue",add=T)
+plot(Dallas_hwyShp, col="cornsilk2", lwd=4, add=T)
 ```
 
 ## Attribute analysis of the identified market areas
@@ -273,6 +273,6 @@ neighClusSet <- as.factor(ifelse(neighClus %in% nLevels[c(4,8)], neighClus, NA))
 mapColorQual(neighClusSet, tractShp, 
              map.title ="Clusters of Major Employment Centers",
              legend.title="Cluster\nId.", legend.cex=0.9)
-plot(lakesShp, col="skyblue", border="skyblue",add=T)
-plot(hwyShp, col="cornsilk2", lwd=4, add=T)
+plot(Dallas_lakesShp, col="skyblue", border="skyblue",add=T)
+plot(Dallas_hwyShp, col="cornsilk2", lwd=4, add=T)
 ```

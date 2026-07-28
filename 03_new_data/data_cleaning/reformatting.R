@@ -89,3 +89,15 @@ add.var<- texas_per_cap_income%>%
 
 DFW_tractShp@data <- DFW_tractShp@data %>% left_join(add.var, by='GEOID')
 data("DFW_tractShp")
+
+load("~/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/DFW_lakesShp.RData")
+Dallas_lakesShp <- DFW_lakesShp
+save(Dallas_lakesShp, file="~/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/Dallas_lakesShp_lakesShp.RData")
+
+load("~/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/bndShp.RData")
+Dallas_bndShp <- bndShp
+save(Dallas_bndShp, file="~/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/Dallas_bndShp.RData")
+
+load("~/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/hwyShp.RData")
+Dallas_hwyShp <- hwyShp
+save(Dallas_hwyShp, file="~/GitHub_m-hutch/independent-study-su26/02_TexMix/TexMix/data/Dallas_hwyShp.RData")
